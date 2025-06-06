@@ -17,7 +17,7 @@ import { useState, useEffect } from 'react'
         { type: 'car', icon: 'Car', name: 'Car', baseFare: 200 }
       ]
       
-      const BookingForm = ({ onRideBooked }) => {
+const BookingForm = ({ onRideBooked }) => {
         const [vehicles, setVehicles] = useState([])
         const [loading, setLoading] = useState(false)
         const [error, setError] = useState(null)
@@ -27,6 +27,12 @@ import { useState, useEffect } from 'react'
         const [bookingTimer, setBookingTimer] = useState(0)
         const [isBooking, setIsBooking] = useState(false)
         const [currentRide, setCurrentRide] = useState(null)
+        
+        // New state for enhanced booking features
+        const [scheduleType, setScheduleType] = useState('now')
+        const [scheduledDateTime, setScheduledDateTime] = useState('')
+        const [passengerCount, setPassengerCount] = useState(1)
+        const [specialRequests, setSpecialRequests] = useState('')
       
         useEffect(() => {
           loadVehicles()
@@ -144,12 +150,20 @@ if (loading) {
         }
       
         return (
-          <div className="p-6">
+<div className="p-6">
             <VehicleSelector
               vehicleTypes={vehicleTypes}
               selectedVehicleType={selectedVehicleType}
               onSelect={setSelectedVehicleType}
               getAvailableCount={getAvailableCount}
+              scheduleType={scheduleType}
+              onScheduleTypeChange={setScheduleType}
+              scheduledDateTime={scheduledDateTime}
+              onScheduledDateTimeChange={setScheduledDateTime}
+              passengerCount={passengerCount}
+              onPassengerCountChange={setPassengerCount}
+              specialRequests={specialRequests}
+              onSpecialRequestsChange={setSpecialRequests}
             />
       
             <div className="space-y-4 mb-6">
