@@ -33,45 +33,75 @@ const BookingForm = ({ onRideBooked }) => {
   const [passengerCount, setPassengerCount] = useState(1)
   const [specialRequests, setSpecialRequests] = useState('')
   const [rideType, setRideType] = useState('personal')
-  
-  // Shared ride matching state
+// Enhanced shared ride matching state
   const [isMatching, setIsMatching] = useState(false)
   const [matchingTimer, setMatchingTimer] = useState(0)
   const [matchResult, setMatchResult] = useState(null)
   const [showFallbackOption, setShowFallbackOption] = useState(false)
+  const [matchingStatus, setMatchingStatus] = useState(null)
+  const [matchingProgress, setMatchingProgress] = useState({
+    stage: 'idle', // 'idle', 'searching', 'found', 'timeout'
+    message: '',
+    progress: 0
+  })
   
   // Location validation state
   const [locationError, setLocationError] = useState('')
   const [isValidating, setIsValidating] = useState(false)
   const [locationValid, setLocationValid] = useState(false)
-        useEffect(() => {
-          loadVehicles()
-        }, [])
-      
-        useEffect(() => {
-          let timer
-          if (isBooking && bookingTimer > 0) {
-            timer = setTimeout(() => {
-              setBookingTimer(prev => prev - 1)
-            }, 1000)
-          } else if (isBooking && bookingTimer === 0) {
-            completeBooking()
-          }
-          return () => clearTimeout(timer)
-}, [isBooking, bookingTimer])
+  
+  useEffect(() => {
+    loadVehicles()
+  }, [])
 
-  // Shared ride matching timer
+  useEffect(() => {
+    let timer
+    if (isBooking && bookingTimer > 0) {
+      timer = setTimeout(() => {
+        setBookingTimer(prev => prev - 1)
+      }, 1000)
+    } else if (isBooking && bookingTimer === 0) {
+      completeBooking()
+    }
+    return () => clearTimeout(timer)
+  }, [isBooking, bookingTimer])
+
+  // Enhanced shared ride matching timer with progress tracking
   useEffect(() => {
     let timer
     if (isMatching && matchingTimer > 0) {
       timer = setTimeout(() => {
-        setMatchingTimer(prev => prev - 1)
+        setMatchingTimer(prev => {
+          const newTime = prev - 1
+          const totalTime = 300 // 5 minutes
+          const progress = ((totalTime - newTime) / totalTime) * 100
+          
+          setMatchingProgress(prevProgress => ({
+            ...prevProgress,
+            progress: Math.min(progress, 95) // Cap at 95% until match found
+          }))
+          
+          return newTime
+        })
       }, 1000)
     } else if (isMatching && matchingTimer === 0) {
       handleMatchingTimeout()
     }
     return () => clearTimeout(timer)
   }, [isMatching, matchingTimer])
+
+  // Background status checking for shared rides
+  useEffect(() => {
+    let statusChecker
+    if (isMatching) {
+      statusChecker = setInterval(() => {
+        updateMatchingProgress()
+      }, 5000) // Check every 5 seconds
+    }
+    return () => {
+      if (statusChecker) clearInterval(statusChecker)
+    }
+  }, [isMatching])
 
   // Validate locations when they change
   useEffect(() => {
@@ -172,11 +202,15 @@ const startBooking = () => {
       toast.info('Processing your booking...')
     }
   }
-
-  const startSharedRideMatching = async () => {
+const startSharedRideMatching = async () => {
     setIsMatching(true)
     setMatchingTimer(300) // 5 minutes for matching
     setShowFallbackOption(false)
+    setMatchingProgress({
+      stage: 'searching',
+      message: 'Finding shared ride matches...',
+      progress: 5
+    })
     toast.info('🔍 Finding shared ride matches...')
 
     try {
@@ -191,18 +225,24 @@ const startBooking = () => {
       const matchResult = await rideService.findSharedRideMatches(rideRequest)
       setMatchResult(matchResult)
 
-      if (matchResult.success) {
+      if (matchResult.success && matchResult.matchType === 'immediate') {
+        setMatchingProgress({
+          stage: 'found',
+          message: 'Match found! Confirming booking...',
+          progress: 100
+        })
         toast.success('✅ Shared ride match found!')
         setIsMatching(false)
         setMatchingTimer(0)
         proceedWithSharedBooking(matchResult)
       } else {
-        // Continue searching for a bit more time
-        setTimeout(() => {
-          if (isMatching) {
-            handleMatchingTimeout()
-          }
-        }, 10000) // Show fallback after 10 seconds instead of full 5 minutes for demo
+        // Start background matching process
+        setMatchingProgress({
+          stage: 'searching',
+          message: 'Searching for compatible riders...',
+          progress: 10
+        })
+        toast.info('🔄 Background search started...')
       }
     } catch (error) {
       toast.error('Error finding shared ride matches')
@@ -210,17 +250,50 @@ const startBooking = () => {
     }
   }
 
+  const updateMatchingProgress = () => {
+    if (!isMatching) return
+
+    const progressMessages = [
+      'Analyzing nearby ride requests...',
+      'Checking route compatibility...',
+      'Validating passenger preferences...',
+      'Optimizing shared routes...',
+      'Almost found a match...'
+    ]
+
+    const currentProgress = matchingProgress.progress
+    const newProgress = Math.min(currentProgress + Math.random() * 10, 90)
+    const messageIndex = Math.floor((newProgress / 100) * progressMessages.length)
+
+    setMatchingProgress(prev => ({
+      ...prev,
+      message: progressMessages[messageIndex] || prev.message,
+      progress: newProgress
+    }))
+  }
+
   const handleMatchingTimeout = () => {
     setIsMatching(false)
     setMatchingTimer(0)
     setShowFallbackOption(true)
-    toast.warning('No shared ride matches found. Book a personal cab instead?')
+    setMatchingProgress({
+      stage: 'timeout',
+      message: 'No matches found',
+      progress: 100
+    })
+    toast.warning('⏰ No shared ride matches found. Book a personal cab instead?')
   }
 
   const proceedWithSharedBooking = async (matchResult) => {
+    setIsMatching(false)
     setIsBooking(true)
     setBookingTimer(3)
-    toast.info('Confirming your shared ride...')
+    setMatchingProgress({
+      stage: 'found',
+      message: 'Match confirmed! Processing booking...',
+      progress: 100
+    })
+    toast.info('✅ Confirming your shared ride...')
   }
 
   const bookPersonalCabFallback = () => {
@@ -228,15 +301,17 @@ const startBooking = () => {
     setShowFallbackOption(false)
     setIsBooking(true)
     setBookingTimer(3)
-    toast.info('Booking personal cab...')
+    setMatchingProgress({ stage: 'idle', message: '', progress: 0 })
+    toast.info('🚗 Booking personal cab...')
   }
 
   const cancelSharedRideSearch = () => {
     setIsMatching(false)
     setMatchingTimer(0)
     setShowFallbackOption(false)
-    toast.info('Shared ride search cancelled')
-  }
+    setMatchingProgress({ stage: 'idle', message: '', progress: 0 })
+    toast.info('❌ Shared ride search cancelled')
+}
       
 const completeBooking = async () => {
     try {
@@ -483,33 +558,88 @@ return (
                 </Button>
               )}
 
-              {/* Shared Ride Matching Status */}
+{/* Enhanced Shared Ride Matching Status */}
               {isMatching && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="text-center space-y-4 bg-green-50 dark:bg-green-900/20 p-6 rounded-2xl border border-green-200 dark:border-green-800"
+                  className="text-center space-y-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-2xl border border-green-200 dark:border-green-800"
                 >
-                  <div className="flex items-center justify-center space-x-2">
+                  {/* Header with animated icon */}
+                  <div className="flex items-center justify-center space-x-3">
                     <motion.div 
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full"
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full"
                     />
-                    <ApperIcon name="Users" size={20} className="text-green-600" />
+                    <ApperIcon name="Users" size={24} className="text-green-600 animate-pulse-slow" />
+                    <motion.div 
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-3 h-3 bg-green-500 rounded-full"
+                    />
                   </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full">
+                    <div className="flex justify-between text-sm text-green-600 dark:text-green-400 mb-2">
+                      <span>Finding Shared Ride Match</span>
+                      <span>{Math.floor(matchingProgress.progress)}%</span>
+                    </div>
+                    <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2.5">
+                      <motion.div 
+                        className="bg-gradient-to-r from-green-500 to-blue-500 h-2.5 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${matchingProgress.progress}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Status message */}
                   <div>
                     <div className="text-lg font-bold text-green-700 dark:text-green-300">
-                      Finding Shared Ride Match
+                      {matchingProgress.message}
                     </div>
-                    <div className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      {Math.floor(matchingTimer / 60)}:{(matchingTimer % 60).toString().padStart(2, '0')} remaining
+                    <div className="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center justify-center space-x-2">
+                      <span>{Math.floor(matchingTimer / 60)}:{(matchingTimer % 60).toString().padStart(2, '0')} remaining</span>
+                      <div className="matching-dots flex space-x-1">
+                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-sm text-green-600 dark:text-green-400">
-                    We're finding other passengers heading in your direction...
+
+                  {/* Progress indicators */}
+                  <div className="grid grid-cols-3 gap-4 text-xs">
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        matchingProgress.progress > 20 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
+                      }`}>
+                        <ApperIcon name="Search" size={16} />
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">Searching</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        matchingProgress.progress > 60 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
+                      }`}>
+                        <ApperIcon name="Route" size={16} />
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">Matching</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        matchingProgress.progress > 90 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
+                      }`}>
+                        <ApperIcon name="CheckCircle" size={16} />
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">Confirming</span>
+                    </div>
                   </div>
+
                   <Button
                     onClick={cancelSharedRideSearch}
                     className="px-6 py-2 border border-green-300 dark:border-green-600 rounded-xl text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-800 transition-colors"
@@ -589,4 +719,5 @@ return (
           </div>
         )
       }
+      
       export default BookingForm
