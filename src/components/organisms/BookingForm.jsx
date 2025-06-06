@@ -335,7 +335,11 @@ if (loading) {
                     Cancel
                   </Button>
                 </motion.div>
-)}
+              )}
+      
+              {currentRide && (
+                <BookingConfirmation currentRide={currentRide} />
+              )}
             </AnimatePresence>
           </div>
         )
