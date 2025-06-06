@@ -267,9 +267,11 @@ const completeBooking = async () => {
           vehicleNumber: selectedVehicle?.vehicleNumber || `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
           photo: `https://ui-avatars.com/api/?name=${selectedVehicle?.driverName || 'Driver'}&size=128&background=random`
         },
-        eta: `${Math.floor(Math.random() * 10) + 3} mins`,
+eta: `${Math.floor(Math.random() * 10) + 3} mins`,
         bookingId: `QR${Date.now()}`,
+        bookingTime: scheduleType === 'now' ? new Date().toISOString() : (scheduledDateTime || new Date().toISOString()),
         createdAt: new Date().toISOString(),
+        bookingType: scheduleType === 'now' ? 'immediate' : 'scheduled',
         ...(rideType === 'shared' && matchResult?.success && {
           matchedWith: matchResult.matchedRide?.id,
           estimatedPickupTime: matchResult.estimatedPickupTime,

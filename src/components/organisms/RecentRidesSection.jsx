@@ -1,11 +1,33 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'react-toastify'
 import RideCard from '@/components/molecules/RideCard'
 import Text from '@/components/atoms/Text'
 import Button from '@/components/atoms/Button'
+import ApperIcon from '@/components/ApperIcon'
+import rideService from '@/services/api/rideService'
 
 const BookingsSection = ({ rides, loading, error }) => {
   const [selectedStatus, setSelectedStatus] = useState('all')
+  const [showDateCorrectionNotice, setShowDateCorrectionNotice] = useState(false)
+  const [correctedDatesCount, setCorrectedDatesCount] = useState(0)
+
+  // Check for corrected dates when component mounts or rides change
+  useEffect(() => {
+    if (rides && rides.length > 0) {
+      const correctedLog = rideService.getCorrectedDatesLog()
+      if (correctedLog.length > 0) {
+        setCorrectedDatesCount(correctedLog.length)
+        setShowDateCorrectionNotice(true)
+        toast.info(`${correctedLog.length} invalid booking dates were automatically corrected to current time`)
+        
+        // Clear the log after showing notification
+        setTimeout(() => {
+          rideService.clearCorrectedDatesLog()
+        }, 5000)
+      }
+    }
+  }, [rides])
 
   const statusOptions = [
     { value: 'all', label: 'All', count: rides?.length || 0 },
@@ -43,9 +65,44 @@ const BookingsSection = ({ rides, loading, error }) => {
       transition={{ delay: 0.4 }}
       className="mt-8"
     >
-      <Text as="h3" className="text-xl font-semibold text-surface-900 dark:text-white mb-4">
-        Your Bookings
-      </Text>
+<div className="flex items-center justify-between mb-4">
+        <Text as="h3" className="text-xl font-semibold text-surface-900 dark:text-white">
+          Your Bookings
+        </Text>
+        {correctedDatesCount > 0 && (
+          <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
+            {correctedDatesCount} dates corrected
+          </span>
+        )}
+      </div>
+
+      {/* Date Correction Notice */}
+      <AnimatePresence>
+        {showDateCorrectionNotice && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+          >
+            <div className="flex items-start space-x-2">
+              <ApperIcon name="Info" size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <Text className="text-sm text-blue-700 dark:text-blue-300">
+                  We found and corrected {correctedDatesCount} invalid booking date(s) to the current time for better accuracy.
+                </Text>
+              </div>
+              <Button
+                onClick={() => setShowDateCorrectionNotice(false)}
+                className="text-blue-600 hover:text-blue-800 p-1"
+              >
+                <ApperIcon name="X" size={14} />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Status Filter Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">

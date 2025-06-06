@@ -102,11 +102,22 @@ const RideCard = ({ ride, onUpdate }) => {
                   {ride.status}
                 </span>
               </div>
-              <Text className="text-sm text-surface-600 dark:text-surface-400">
+<Text className="text-sm text-surface-600 dark:text-surface-400">
                 {ride.pickupLocation?.address} → {ride.dropoffLocation?.address}
               </Text>
               <Text className="text-xs text-surface-500 dark:text-surface-500 mt-1">
-                {new Date(ride.bookingTime).toLocaleDateString()} at {new Date(ride.bookingTime).toLocaleTimeString()}
+                {(() => {
+                  const bookingDate = new Date(ride.bookingTime);
+                  const isValidDate = bookingDate instanceof Date && !isNaN(bookingDate.getTime());
+                  
+                  if (!isValidDate) {
+                    // Show current date/time for invalid dates
+                    const now = new Date();
+                    return `${now.toLocaleDateString()} at ${now.toLocaleTimeString()} (corrected)`;
+                  }
+                  
+                  return `${bookingDate.toLocaleDateString()} at ${bookingDate.toLocaleTimeString()}`;
+                })()}
               </Text>
             </div>
           </div>
