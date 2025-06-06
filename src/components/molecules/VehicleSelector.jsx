@@ -14,7 +14,9 @@ const VehicleSelector = ({
         passengerCount,
         onPassengerCountChange,
         specialRequests,
-        onSpecialRequestsChange
+        onSpecialRequestsChange,
+        rideType,
+        onRideTypeChange
       }) => {
         const incrementPassengers = () => {
           if (passengerCount < 6) {
@@ -38,12 +40,97 @@ const VehicleSelector = ({
           return `${year}-${month}-${day}T${hours}:${minutes}`
         }
 
-        return (
+return (
           <div className="mb-6">
             <Text as="h3" className="text-lg font-semibold text-surface-900 dark:text-white mb-3">
               Choose Your Ride
             </Text>
             
+            {/* Ride Type Selection */}
+            <div className="mb-6">
+              <Text className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-3">
+                Select ride type
+              </Text>
+              <div className="grid grid-cols-2 gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onRideTypeChange('personal')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    rideType === 'personal'
+                      ? 'border-primary bg-primary/5 shadow-neu-light dark:shadow-neu-dark'
+                      : 'border-surface-200 dark:border-surface-600 hover:border-surface-300 dark:hover:border-surface-500'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <ApperIcon 
+                      name="User" 
+                      size={20} 
+                      className={rideType === 'personal' ? 'text-primary' : 'text-surface-600 dark:text-surface-400'} 
+                    />
+                    <div className="text-left">
+                      <Text className={`text-sm font-medium ${
+                        rideType === 'personal' ? 'text-primary' : 'text-surface-700 dark:text-surface-300'
+                      }`} as="div">
+                        Personal Cab
+                      </Text>
+                      <Text className="text-xs text-surface-500 dark:text-surface-400" as="div">
+                        Private ride, direct route
+                      </Text>
+                    </div>
+                  </div>
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onRideTypeChange('shared')}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    rideType === 'shared'
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-neu-light dark:shadow-neu-dark'
+                      : 'border-surface-200 dark:border-surface-600 hover:border-surface-300 dark:hover:border-surface-500'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <ApperIcon 
+                      name="Users" 
+                      size={20} 
+                      className={rideType === 'shared' ? 'text-green-600' : 'text-surface-600 dark:text-surface-400'} 
+                    />
+                    <div className="text-left">
+                      <Text className={`text-sm font-medium ${
+                        rideType === 'shared' ? 'text-green-600' : 'text-surface-700 dark:text-surface-300'
+                      }`} as="div">
+                        Shared Cab
+                      </Text>
+                      <Text className="text-xs text-surface-500 dark:text-surface-400" as="div">
+                        30% off, may include stops
+                      </Text>
+                    </div>
+                  </div>
+                </motion.button>
+              </div>
+              
+              {rideType === 'shared' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                >
+                  <div className="flex items-start space-x-2">
+                    <ApperIcon name="Info" size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <Text className="text-sm text-green-700 dark:text-green-300 font-medium" as="div">
+                        Shared Ride Benefits
+                      </Text>
+                      <Text className="text-xs text-green-600 dark:text-green-400 mt-1" as="div">
+                        • 30% discount on fare • Eco-friendly option • May include other passengers
+                      </Text>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
             {/* Vehicle Selection */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {vehicleTypes.map((vehicle) => {
