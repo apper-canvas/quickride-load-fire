@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import ApperIcon from '@/components/ApperIcon'
-import Text from '@/components/atoms/Text'
-import Button from '@/components/atoms/Button'
-import rideService from '@/services/api/rideService'
+import ApperIcon from '../ApperIcon'
+import Text from '../atoms/Text'
+import Button from '../atoms/Button'
+import rideService from '../../services/api/rideService'
 
 const BookingConfirmation = ({ currentRide, onBookingCancelled }) => {
   const [isCancelling, setIsCancelling] = useState(false)

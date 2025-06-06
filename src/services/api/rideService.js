@@ -6,26 +6,34 @@ class RideService extends BaseService {
     super(ridesData);
   }
 
-  async getByStatus(status) {
-    await this.mockDelay();
-    return this.data.filter(ride => ride.status === status).map(this.deepClone);
+async getByStatus(status) {
+    const { mockDelay, deepClone } = await import('../index.js');
+    await mockDelay();
+    return this.data.filter(ride => ride.status === status).map(deepClone);
   }
 
   async getByVehicleType(vehicleType) {
-    await this.mockDelay();
-    return this.data.filter(ride => ride.vehicleType === vehicleType).map(this.deepClone);
-}
+    const { mockDelay, deepClone } = await import('../index.js');
+    await mockDelay();
+    return this.data.filter(ride => ride.vehicleType === vehicleType).map(deepClone);
+  }
 
   async updateStatus(id, status) {
-    await this.mockDelay();
+    const { mockDelay } = await import('../index.js');
+    await mockDelay();
     return this.update(id, { status });
   }
 
   async cancelBooking(id) {
-    await this.mockDelay();
+    const { mockDelay } = await import('../index.js');
+    await mockDelay();
     return this.update(id, { 
       status: 'cancelled',
       cancelledAt: new Date().toISOString()
     });
   }
 }
+
+// Create and export service instance
+const rideService = new RideService();
+export default rideService;
