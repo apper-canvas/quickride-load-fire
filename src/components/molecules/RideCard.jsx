@@ -137,43 +137,79 @@ const RideCard = ({ ride, onUpdate }) => {
               <ApperIcon name="ChevronDown" size={20} className="text-surface-400" />
             </motion.div>
           </div>
-        </div>
-        
-        {/* Action Buttons - Always Visible for Confirmed Bookings */}
-        {(ride.status === 'confirmed' || canCancelBooking()) && (
-          <div className="px-4 pb-2">
-            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-surface-100 dark:border-surface-700">
-              {ride.status === 'confirmed' && ride.driver?.phone && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleContactDriver()
-                  }}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
-                  disabled={isLoading}
-                >
-                  <ApperIcon name="Phone" size={14} className="mr-2" />
-                  Contact Driver
-                </Button>
+</div>
+      </div>
+
+      {/* Action Buttons - Conditional Visibility */}
+      {(ride.status === 'confirmed' && ride.driver?.phone) || canCancelBooking() ? (
+        <div className="px-4 pb-4 border-t border-surface-100 dark:border-surface-700">
+          <div className="flex flex-col sm:flex-row gap-2 pt-3">
+            {/* Contact Driver Button - Only for confirmed bookings with driver phone */}
+            {ride.status === 'confirmed' && ride.driver?.phone && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleContactDriver()
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2.5 font-medium"
+                disabled={isLoading}
+              >
+                <ApperIcon name="Phone" size={16} className="mr-2" />
+                Contact Driver
+              </Button>
+            )}
+            
+            {/* Cancel Booking Button - Only when cancellation policy allows */}
+            {canCancelBooking() && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCancelBooking()
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm py-2.5 font-medium"
+                disabled={isLoading}
+              >
+                <ApperIcon name="X" size={16} className="mr-2" />
+                {isLoading ? 'Cancelling...' : 'Cancel Booking'}
+              </Button>
+            )}
+          </div>
+          
+          {/* Policy Information */}
+          {ride.status !== 'completed' && ride.status !== 'cancelled' && (
+            <div className="mt-2 text-xs text-surface-500 dark:text-surface-400">
+              {ride.status === 'confirmed' && !ride.driver?.phone && (
+                <div className="flex items-center space-x-1 mb-1">
+                  <ApperIcon name="Info" size={12} />
+                  <span>Driver contact will be available once assigned</span>
+                </div>
               )}
-              
-              {canCancelBooking() && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleCancelBooking()
-                  }}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm py-2"
-                  disabled={isLoading}
-                >
-                  <ApperIcon name="X" size={14} className="mr-2" />
-                  {isLoading ? 'Cancelling...' : 'Cancel Booking'}
-                </Button>
+              {!canCancelBooking() && (
+                <div className="flex items-center space-x-1">
+                  <ApperIcon name="Clock" size={12} />
+                  <span>
+                    {ride.bookingType === 'immediate' 
+                      ? 'Free cancellation expired (5 min limit)' 
+                      : 'Free cancellation requires 12+ hours notice'}
+                  </span>
+                </div>
               )}
             </div>
+          )}
+        </div>
+      ) : (
+        /* No action buttons available - show explanation */
+        ride.status !== 'completed' && ride.status !== 'cancelled' && (
+          <div className="px-4 pb-4 border-t border-surface-100 dark:border-surface-700">
+            <div className="pt-3 text-center">
+              <Text className="text-xs text-surface-500 dark:text-surface-400">
+                {ride.status === 'pending' && 'Actions will be available once booking is confirmed'}
+                {ride.status === 'in-progress' && 'Ride is currently in progress'}
+              </Text>
+            </div>
           </div>
-        )}
-      </div>
+        )
+      )}
 
       {/* Expanded Content */}
       <AnimatePresence>
