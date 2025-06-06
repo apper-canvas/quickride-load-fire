@@ -119,7 +119,7 @@ const RideCard = ({ ride, onUpdate }) => {
                 Booking #{ride.id?.toString().slice(-6)}
               </Text>
             </div>
-            <motion.div
+<motion.div
               animate={{ rotate: isExpanded ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
@@ -127,6 +127,41 @@ const RideCard = ({ ride, onUpdate }) => {
             </motion.div>
           </div>
         </div>
+        
+        {/* Action Buttons - Always Visible for Confirmed Bookings */}
+        {(ride.status === 'confirmed' || canCancelBooking()) && (
+          <div className="px-4 pb-2">
+            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-surface-100 dark:border-surface-700">
+              {ride.status === 'confirmed' && ride.driver?.phone && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleContactDriver()
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+                  disabled={isLoading}
+                >
+                  <ApperIcon name="Phone" size={14} className="mr-2" />
+                  Contact Driver
+                </Button>
+              )}
+              
+              {canCancelBooking() && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleCancelBooking()
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm py-2"
+                  disabled={isLoading}
+                >
+                  <ApperIcon name="X" size={14} className="mr-2" />
+                  {isLoading ? 'Cancelling...' : 'Cancel Booking'}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Expanded Content */}
@@ -240,42 +275,14 @@ const RideCard = ({ ride, onUpdate }) => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  {ride.status === 'confirmed' && ride.driver?.phone && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleContactDriver()
-                      }}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                      disabled={isLoading}
-                    >
-                      <ApperIcon name="Phone" size={16} className="mr-2" />
-                      Contact Driver
-                    </Button>
-                  )}
-                  
-                  {canCancelBooking() && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleCancelBooking()
-                      }}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                      disabled={isLoading}
-                    >
-                      <ApperIcon name="X" size={16} className="mr-2" />
-                      {isLoading ? 'Cancelling...' : 'Cancel Booking'}
-                    </Button>
-                  )}
-                  
-                  {ride.status === 'completed' && (
+{/* Additional Actions in Expanded View */}
+                {ride.status === 'completed' && (
+                  <div className="pt-4">
                     <Text className="text-sm text-surface-500 dark:text-surface-400 text-center py-2">
                       This is a past booking. No actions available.
                     </Text>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Cancellation Policy Info */}
                 {ride.status !== 'completed' && ride.status !== 'cancelled' && (
