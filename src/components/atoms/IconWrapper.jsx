@@ -1,11 +1,11 @@
 import ApperIcon from '@/components/ApperIcon'
       
-      const IconWrapper = ({ iconName, iconSize, iconClass, wrapperClass, children }) => {
+const IconWrapper = ({ iconName, iconSize, iconClass, wrapperClass, children }) => {
         return (
-          &lt;div className={wrapperClass}&gt;
-            {iconName && &lt;ApperIcon name={iconName} size={iconSize} className={iconClass} /&gt;}
+          <div className={wrapperClass}>
+            {iconName && <ApperIcon name={iconName} size={iconSize} className={iconClass} />}
             {children}
-          &lt;/div&gt;
+          </div>
         )
       }
       
