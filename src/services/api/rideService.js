@@ -158,34 +158,82 @@ async createSharedRide(rideData) {
     const { mockDelay } = await import('../index.js');
     await mockDelay();
     const now = new Date();
-    const sharedRideData = {
-      ...rideData,
-      rideType: 'shared',
-      fare: Math.round(rideData.fare * 0.7), // 30% discount
-      isMatching: true,
-      matchingStartTime: now.toISOString(),
-      status: 'finding_match',
-      bookingTime: now.toISOString(),
-      createdAt: now.toISOString()
-    };
     
-    return this.create(sharedRideData);
+    try {
+      const sharedRideData = {
+        ...rideData,
+        id: Date.now(),
+        rideType: 'shared',
+        fare: Math.round(rideData.fare * 0.7), // 30% discount
+        isMatching: false, // Set to false so it appears in pending bookings
+        matchingStartTime: now.toISOString(),
+        status: 'pending', // Start as pending so it appears in Your Bookings
+        bookingTime: now.toISOString(),
+        createdAt: now.toISOString(),
+        // Ensure all required fields are present
+        pickupLocation: rideData.pickupLocation || { address: '' },
+        dropoffLocation: rideData.dropoffLocation || { address: '' },
+        vehicleType: rideData.vehicleType || 'bike',
+        passengerCount: rideData.passengerCount || 1,
+        bookingId: rideData.bookingId || `QR${Date.now()}`
+      };
+      
+      // Save to persistent storage
+      const savedRide = await this.create(sharedRideData);
+      
+      // Simulate shared ride confirmation after a short delay
+      setTimeout(async () => {
+        try {
+          await this.update(savedRide.id, {
+            status: 'confirmed',
+            isMatching: false,
+            matchingCompletedAt: now.toISOString(),
+            driverInfo: savedRide.driverInfo || {
+              name: `Driver ${Math.floor(Math.random() * 999) + 1}`,
+              rating: (4.0 + Math.random()).toFixed(1),
+              vehicleNumber: `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
+              photo: `https://ui-avatars.com/api/?name=Driver&size=128&background=random`
+            }
+          });
+        } catch (error) {
+          console.error('Failed to update shared ride status:', error);
+        }
+      }, 3000);
+      
+      return savedRide;
+    } catch (error) {
+      console.error('Failed to create shared ride:', error);
+      throw new Error('Failed to save shared ride booking. Please try again.');
+    }
   }
 
   async create(data) {
     const now = new Date();
-    const enhancedData = {
-      ...data,
-      id: data.id || Date.now(),
-      bookingTime: data.bookingTime || now.toISOString(),
-      createdAt: data.createdAt || now.toISOString(),
-      // Ensure scheduledTime is valid if provided
-      ...(data.scheduledTime && !this.isValidDate(data.scheduledTime) && {
-        scheduledTime: now.toISOString()
-      })
-    };
     
-    return super.create(enhancedData);
+    try {
+      const enhancedData = {
+        ...data,
+        id: data.id || Date.now(),
+        bookingTime: data.bookingTime || now.toISOString(),
+        createdAt: data.createdAt || now.toISOString(),
+        // Ensure scheduledTime is valid if provided
+        ...(data.scheduledTime && !this.isValidDate(data.scheduledTime) && {
+          scheduledTime: now.toISOString()
+        })
+      };
+      
+      const result = await super.create(enhancedData);
+      
+      // Verify the booking was saved successfully
+      if (!result || !result.id) {
+        throw new Error('Failed to save booking data');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to create ride:', error);
+      throw new Error('Failed to save booking. Please try again.');
+    }
   }
 
 async updateMatchingStatus(id, matchResult) {

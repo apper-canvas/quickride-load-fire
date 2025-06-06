@@ -7,11 +7,10 @@ import Button from '@/components/atoms/Button'
 import ApperIcon from '@/components/ApperIcon'
 import rideService from '@/services/api/rideService'
 
-const BookingsSection = ({ rides, loading, error }) => {
+const BookingsSection = ({ rides, loading, error, onRefresh }) => {
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [showDateCorrectionNotice, setShowDateCorrectionNotice] = useState(false)
   const [correctedDatesCount, setCorrectedDatesCount] = useState(0)
-
   // Check for corrected dates when component mounts or rides change
   useEffect(() => {
     if (rides && rides.length > 0) {
@@ -145,11 +144,18 @@ const BookingsSection = ({ rides, loading, error }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-            >
+>
               <RideCard 
                 ride={ride} 
                 showStatus={true}
-                onUpdate={() => window.location.reload()}
+                onUpdate={() => {
+                  // Refresh the bookings list
+                  if (onRefresh) {
+                    onRefresh()
+                  } else {
+                    window.location.reload()
+                  }
+                }}
               />
             </motion.div>
           ))}

@@ -251,11 +251,11 @@ const completeBooking = async () => {
       
       const newRide = {
         vehicleType: selectedVehicleType,
-        pickupLocation: { address: pickupLocation },
-        dropoffLocation: { address: dropoffLocation },
+        pickupLocation: { address: pickupLocation.trim() },
+        dropoffLocation: { address: dropoffLocation.trim() },
         fare: rideType === 'shared' ? Math.round(originalFare * 0.7) : originalFare,
         originalFare: originalFare,
-        status: rideType === 'shared' ? 'confirmed' : 'pending',
+        status: 'pending', // Always start as pending for consistency
         rideType,
         scheduleType,
         scheduledDateTime: scheduleType === 'later' ? scheduledDateTime : null,
@@ -267,7 +267,7 @@ const completeBooking = async () => {
           vehicleNumber: selectedVehicle?.vehicleNumber || `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
           photo: `https://ui-avatars.com/api/?name=${selectedVehicle?.driverName || 'Driver'}&size=128&background=random`
         },
-eta: `${Math.floor(Math.random() * 10) + 3} mins`,
+        eta: `${Math.floor(Math.random() * 10) + 3} mins`,
         bookingId: `QR${Date.now()}`,
         bookingTime: scheduleType === 'now' ? new Date().toISOString() : (scheduledDateTime || new Date().toISOString()),
         createdAt: new Date().toISOString(),
@@ -279,12 +279,45 @@ eta: `${Math.floor(Math.random() * 10) + 3} mins`,
         })
       }
 
-      const createdRide = await rideService.create(newRide)
+      // Validate required fields before saving
+      if (!newRide.pickupLocation.address || !newRide.dropoffLocation.address) {
+        throw new Error('Pickup and dropoff locations are required')
+      }
+
+      if (!newRide.vehicleType || !newRide.fare) {
+        throw new Error('Vehicle type and fare information are required')
+      }
+
+      let createdRide;
+      
+      // Use different service methods based on ride type
+      if (rideType === 'shared') {
+        toast.info('💾 Saving shared ride booking...')
+        createdRide = await rideService.createSharedRide(newRide)
+        toast.success('✅ Shared ride booking saved successfully!')
+      } else {
+        toast.info('💾 Saving booking...')
+        createdRide = await rideService.create(newRide)
+        toast.success('✅ Booking saved successfully!')
+      }
+      
+      // Verify booking was saved with all required data
+      if (!createdRide || !createdRide.id) {
+        throw new Error('Booking was not saved properly')
+      }
+
+      // Verify critical booking information
+      if (!createdRide.pickupLocation?.address || !createdRide.dropoffLocation?.address) {
+        throw new Error('Booking location information was not saved properly')
+      }
+
+      // Update parent component with new booking
       onRideBooked?.(createdRide)
+      
       setIsBooking(false)
       setBookingTimer(0)
       
-// Reset form
+      // Reset form
       setPickupLocation('')
       setDropoffLocation('')
       setSpecialRequests('')
@@ -295,7 +328,12 @@ eta: `${Math.floor(Math.random() * 10) + 3} mins`,
       setMatchingTimer(0)
       setMatchResult(null)
       setShowFallbackOption(false)
-      toast.success('🎉 Ride booked successfully!')
+      
+      // Show success message with booking details
+      const bookingType = rideType === 'shared' ? 'Shared ride' : 'Personal cab'
+      toast.success(`🎉 ${bookingType} booking confirmed! Added to Your Bookings.`, {
+        autoClose: 5000
+      })
       
       // Navigate to booking confirmed page with ride data
       navigate('/booking-confirmed', { 
@@ -305,8 +343,11 @@ eta: `${Math.floor(Math.random() * 10) + 3} mins`,
         } 
       })
     } catch (err) {
-      setError(err.message)
-      toast.error('Failed to book ride')
+      console.error('Booking error:', err)
+      setError(err.message || 'Failed to save booking')
+      toast.error(`❌ ${err.message || 'Failed to save booking. Please try again.'}`, {
+        autoClose: 8000
+      })
       setIsBooking(false)
       setBookingTimer(0)
     }
