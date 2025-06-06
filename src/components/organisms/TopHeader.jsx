@@ -12,47 +12,46 @@ import { useState, useEffect } from 'react'
           const timer = setInterval(() => setCurrentTime(new Date()), 1000)
           return () => clearInterval(timer)
         }, [])
-      
-        return (
-          &lt;motion.header 
+return (
+          <motion.header 
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-md border-b border-surface-200 dark:border-surface-700 sticky top-0 z-50"
-          &gt;
-            &lt;div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"&gt;
-              &lt;div className="flex justify-between items-center h-16"&gt;
-                &lt;div className="flex items-center space-x-3"&gt;
-                  &lt;IconWrapper 
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center space-x-3">
+                  <IconWrapper 
                     wrapperClass="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-soft"
                     iconName="Car" 
                     iconSize={20} 
                     iconClass="text-white" 
-                  /&gt;
-                  &lt;div&gt;
-                    &lt;Text as="h1" className="text-2xl font-heading font-bold text-surface-900 dark:text-white"&gt;
+                  />
+                  <div>
+                    <Text as="h1" className="text-2xl font-heading font-bold text-surface-900 dark:text-white">
                       QuickRide
-                    &lt;/Text&gt;
-                    &lt;Text className="text-xs text-surface-600 dark:text-surface-400"&gt;
+                    </Text>
+                    <Text className="text-xs text-surface-600 dark:text-surface-400">
                       Book in 60 seconds
-                    &lt;/Text&gt;
-                  &lt;/div&gt;
-                &lt;/div&gt;
+                    </Text>
+                  </div>
+                </div>
                 
-                &lt;div className="flex items-center space-x-4"&gt;
-                  &lt;Text className="hidden sm:block text-sm text-surface-600 dark:text-surface-400"&gt;
+                <div className="flex items-center space-x-4">
+                  <Text className="hidden sm:block text-sm text-surface-600 dark:text-surface-400">
                     {currentTime.toLocaleTimeString()}
-                  &lt;/Text&gt;
-                  &lt;Button
+                  </Text>
+                  <Button
                     onClick={() => setIsDarkMode(!isDarkMode)}
                     className="p-2 rounded-xl bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
                     iconName={isDarkMode ? "Sun" : "Moon"} 
                     iconSize={18} 
                     iconClass="text-surface-700 dark:text-surface-300"
-                  /&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
-            &lt;/div&gt;
-          &lt;/motion.header&gt;
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.header>
         )
       }
       
