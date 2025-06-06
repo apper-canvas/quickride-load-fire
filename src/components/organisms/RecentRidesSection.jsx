@@ -144,16 +144,18 @@ const BookingsSection = ({ rides, loading, error, onRefresh }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
->
+              className={`${ride.isMatching ? 'matching-pulse-3min' : ''}`}
+            >
               <RideCard 
                 ride={ride} 
                 showStatus={true}
                 onUpdate={() => {
-                  // Refresh the bookings list
+                  // Refresh the bookings list for real-time updates
                   if (onRefresh) {
                     onRefresh()
                   } else {
-                    window.location.reload()
+                    // Force reload to show updated status
+                    setTimeout(() => window.location.reload(), 500)
                   }
                 }}
               />

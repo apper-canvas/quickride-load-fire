@@ -208,7 +208,7 @@ class RideService extends BaseService {
         vehicleType: rideData.vehicleType || 'bike',
         passengerCount: rideData.passengerCount || 1,
         bookingId: rideData.bookingId || `QR${Date.now()}`,
-        matchingTimeout: now.getTime() + (5 * 60 * 1000) // 5 minutes from now
+matchingTimeout: now.getTime() + (180 * 1000) // 3 minutes from now (180 seconds)
       };
       
       // Save to persistent storage first
@@ -217,13 +217,14 @@ class RideService extends BaseService {
       // Add to matching service queue
       await this.matchingService.addToMatchingQueue(savedRide.id, savedRide);
       
-      // Set up background matching with timeout handling
+      // Set up background matching with 3-minute timeout handling
       this.setupBackgroundMatching(savedRide);
       
-      this.matchingService.log('info', 'Shared ride created and added to matching queue', {
+      this.matchingService.log('info', 'Shared ride created and added to 3-minute matching queue', {
         rideId: savedRide.id,
         pickup: savedRide.pickupLocation?.address,
-        dropoff: savedRide.dropoffLocation?.address
+        dropoff: savedRide.dropoffLocation?.address,
+        timeoutInMinutes: 3
       });
       
       return savedRide;
@@ -236,14 +237,14 @@ class RideService extends BaseService {
   async setupBackgroundMatching(savedRide) {
     const { mockDelay } = await import('../index.js');
     
-    // Simulate background matching process
+    // Simulate background matching process with 3-minute timeout
     const matchingProcess = async () => {
       try {
-        // Check every 10 seconds for matches
+        // Check every 5 seconds for matches (more frequent for 3-minute window)
         const checkInterval = setInterval(async () => {
           const currentTime = Date.now();
           
-          // Check if timeout has been reached
+          // Check if 3-minute timeout has been reached
           if (currentTime > savedRide.matchingTimeout) {
             clearInterval(checkInterval);
             await this.handleMatchingTimeout(savedRide.id);
@@ -260,27 +261,31 @@ class RideService extends BaseService {
           }
           
           // Continue searching...
-          this.matchingService.log('info', 'Continuing search for matches', {
+          const remainingSeconds = Math.floor((savedRide.matchingTimeout - currentTime) / 1000);
+          this.matchingService.log('info', 'Continuing 3-minute search for matches', {
             rideId: savedRide.id,
-            remainingTime: matchingStatus.remainingTime
+            remainingSeconds: remainingSeconds
           });
           
-        }, 10000); // Check every 10 seconds
+        }, 5000); // Check every 5 seconds for more responsive updates
         
-        // Simulate finding a match after random delay (20-60 seconds for demo)
-        const matchDelay = Math.random() * 40000 + 20000;
+        // Simulate finding a match after random delay (30-120 seconds for 3-minute window)
+        const matchDelay = Math.random() * 90000 + 30000; // 30-120 seconds
         
         setTimeout(async () => {
-          const shouldFindMatch = Math.random() > 0.3; // 70% chance of finding match
-          
-          if (shouldFindMatch) {
-            clearInterval(checkInterval);
-            await this.simulateMatchFound(savedRide.id);
+          // Check if timeout hasn't been reached yet
+          if (Date.now() < savedRide.matchingTimeout) {
+            const shouldFindMatch = Math.random() > 0.4; // 60% chance of finding match
+            
+            if (shouldFindMatch) {
+              clearInterval(checkInterval);
+              await this.simulateMatchFound(savedRide.id);
+            }
           }
         }, matchDelay);
         
       } catch (error) {
-        this.matchingService.log('error', 'Error in background matching process', {
+        this.matchingService.log('error', 'Error in 3-minute background matching process', {
           rideId: savedRide.id,
           error: error.message
         });

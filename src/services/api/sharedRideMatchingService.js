@@ -9,12 +9,12 @@ class SharedRideMatchingService extends BaseService {
     this.isProcessing = false;
     this.matchingInterval = null;
     this.config = {
-      maxMatchingTime: 300000, // 5 minutes
+maxMatchingTime: 180000, // 3 minutes (180 seconds)
       proximityRadius: 2, // 2km
       timeWindow: 1800000, // 30 minutes
       maxPassengers: 4,
-      retryInterval: 5000, // 5 seconds
-      matchingCheckInterval: 10000, // 10 seconds
+      retryInterval: 3000, // 3 seconds for faster response
+      matchingCheckInterval: 5000, // 5 seconds for more frequent checks
     };
   }
 
