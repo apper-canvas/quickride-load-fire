@@ -14,11 +14,18 @@ class RideService extends BaseService {
   async getByVehicleType(vehicleType) {
     await this.mockDelay();
     return this.data.filter(ride => ride.vehicleType === vehicleType).map(this.deepClone);
-  }
-
-  async updateStatus(id, status) {
-    return this.update(id, { status });
-  }
 }
 
-export default new RideService();
+  async updateStatus(id, status) {
+    await this.mockDelay();
+    return this.update(id, { status });
+  }
+
+  async cancelBooking(id) {
+    await this.mockDelay();
+    return this.update(id, { 
+      status: 'cancelled',
+      cancelledAt: new Date().toISOString()
+    });
+  }
+}
