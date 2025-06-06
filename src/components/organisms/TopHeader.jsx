@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
-      import { motion } from 'framer-motion'
-      import ApperIcon from '@/components/ApperIcon'
-      import Text from '@/components/atoms/Text'
-      import Button from '@/components/atoms/Button'
-      import IconWrapper from '@/components/atoms/IconWrapper'
-      
-      const TopHeader = ({ isDarkMode, setIsDarkMode }) => {
-        const [currentTime, setCurrentTime] = useState(new Date())
-      
-        useEffect(() => {
-          const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-          return () => clearInterval(timer)
-        }, [])
+import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import ApperIcon from '@/components/ApperIcon'
+import Text from '@/components/atoms/Text'
+import Button from '@/components/atoms/Button'
+import IconWrapper from '@/components/atoms/IconWrapper'
+const TopHeader = ({ isDarkMode, setIsDarkMode }) => {
+  const navigate = useNavigate()
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
 return (
           <motion.header 
             initial={{ y: -50, opacity: 0 }}
@@ -37,10 +38,17 @@ return (
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-4">
+<div className="flex items-center space-x-4">
                   <Text className="hidden sm:block text-sm text-surface-600 dark:text-surface-400">
                     {currentTime.toLocaleTimeString()}
                   </Text>
+                  <Button
+                    onClick={() => navigate('/my-bookings')}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"
+                  >
+                    <ApperIcon name="BookOpen" size={16} className="text-surface-700 dark:text-surface-300" />
+                    <Text className="hidden sm:inline text-sm text-surface-700 dark:text-surface-300">My Bookings</Text>
+                  </Button>
                   <Button
                     onClick={() => setIsDarkMode(!isDarkMode)}
                     className="p-2 rounded-xl bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors"

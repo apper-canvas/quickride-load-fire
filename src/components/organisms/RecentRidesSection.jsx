@@ -66,7 +66,7 @@ const BookingsSection = ({ rides, loading, error, onRefresh }) => {
     >
 <div className="flex items-center justify-between mb-4">
         <Text as="h3" className="text-xl font-semibold text-surface-900 dark:text-white">
-          Your Bookings
+          My Bookings
         </Text>
         {correctedDatesCount > 0 && (
           <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
