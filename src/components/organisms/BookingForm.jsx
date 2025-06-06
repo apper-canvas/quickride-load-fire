@@ -131,91 +131,91 @@ import { useState, useEffect } from 'react'
           toast.info('Booking cancelled')
         }
       
-        if (loading) {
+if (loading) {
           return (
-            &lt;div className="flex items-center justify-center h-96"&gt;
-              &lt;motion.div 
+            <div className="flex items-center justify-center h-96">
+              <motion.div 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
-              /&gt;
-            &lt;/div&gt;
+              />
+            </div>
           )
         }
       
         return (
-          &lt;div className="p-6"&gt;
-            &lt;VehicleSelector
+          <div className="p-6">
+            <VehicleSelector
               vehicleTypes={vehicleTypes}
               selectedVehicleType={selectedVehicleType}
               onSelect={setSelectedVehicleType}
               getAvailableCount={getAvailableCount}
-            /&gt;
+            />
       
-            &lt;div className="space-y-4 mb-6"&gt;
-              &lt;LocationInput
+            <div className="space-y-4 mb-6">
+              <LocationInput
                 label="Pickup Location"
                 value={pickupLocation}
                 onChange={(e) => setPickupLocation(e.target.value)}
                 placeholder="Enter pickup location"
                 iconName="MapPin"
-              /&gt;
-              &lt;LocationInput
+              />
+              <LocationInput
                 label="Dropoff Location"
                 value={dropoffLocation}
                 onChange={(e) => setDropoffLocation(e.target.value)}
                 placeholder="Enter destination"
                 iconName="Navigation"
-              /&gt;
-            &lt;/div&gt;
+              />
+            </div>
       
             {pickupLocation && dropoffLocation && (
-              &lt;FareEstimate fare={calculateFare()} eta={`${Math.floor(Math.random() * 10) + 3}`} /&gt;
+              <FareEstimate fare={calculateFare()} eta={`${Math.floor(Math.random() * 10) + 3}`} />
             )}
       
-            &lt;AnimatePresence&gt;
+            <AnimatePresence>
               {!isBooking && !currentRide && (
-                &lt;Button
+                <Button
                   className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-4 rounded-2xl font-bold text-lg shadow-soft hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   onClick={startBooking}
                   disabled={!pickupLocation || !dropoffLocation}
                   motionProps={{initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 }}}
                   iconName="Zap"
                   iconSize={20}
-                &gt;
-                  &lt;span&gt;Book Now - 60 Second Guarantee&lt;/span&gt;
-                &lt;/Button&gt;
+                >
+                  <span>Book Now - 60 Second Guarantee</span>
+                </Button>
               )}
       
               {isBooking && (
-                &lt;motion.div
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   className="text-center space-y-4"
-                &gt;
-                  &lt;div className="text-2xl font-bold text-primary"&gt;
+                >
+                  <div className="text-2xl font-bold text-primary">
                     {bookingTimer}s
-                  &lt;/div&gt;
-                  &lt;div className="text-surface-600 dark:text-surface-400"&gt;
+                  </div>
+                  <div className="text-surface-600 dark:text-surface-400">
                     Finding your perfect ride...
-                  &lt;/div&gt;
-                  &lt;Button
+                  </div>
+                  <Button
                     onClick={cancelBooking}
                     className="px-6 py-2 border border-surface-300 dark:border-surface-600 rounded-xl text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                  &gt;
+                  >
                     Cancel
-                  &lt;/Button&gt;
-                &lt;/motion.div&gt;
+                  </Button>
+                </motion.div>
               )}
       
               {currentRide && (
-                &lt;BookingConfirmation currentRide={currentRide} /&gt;
+                <BookingConfirmation currentRide={currentRide} />
               )}
-            &lt;/AnimatePresence&gt;
-          &lt;/div&gt>
+            </AnimatePresence>
+          </div>
         )
       }
       
