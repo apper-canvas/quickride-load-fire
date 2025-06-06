@@ -1,0 +1,41 @@
+import { motion } from 'framer-motion'
+      import ApperIcon from '@/components/ApperIcon'
+      
+      const Button = ({ 
+        children, 
+        onClick, 
+        className = '', 
+        disabled = false, 
+        iconName, 
+        iconSize, 
+        iconClass, 
+        whileHover, 
+        whileTap 
+      }) => {
+        const motionProps = {
+          whileHover: whileHover || { scale: 1.02 },
+          whileTap: whileTap || { scale: 0.98 }
+        }
+      
+        const buttonContent = (
+          &lt;&gt;
+            {iconName && (
+              &lt;ApperIcon name={iconName} size={iconSize} className={iconClass} /&gt;
+            )}
+            {children}
+          &lt;/&gt;
+        )
+      
+        return (
+          &lt;motion.button
+            onClick={onClick}
+            className={className}
+            disabled={disabled}
+            {...motionProps}
+          &gt;
+            {buttonContent}
+          &lt;/motion.button&gt;
+        )
+      }
+      
+      export default Button
