@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import { useState, useEffect } from 'react'
 import HomePage from '@/components/pages/HomePage'
+import BookingConfirmedPage from '@/components/pages/BookingConfirmedPage'
 import NotFound from './pages/NotFound'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -23,7 +24,8 @@ function App() {
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
       <Router>
         <Routes>
-<Route path="/" element={<HomePage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+          <Route path="/" element={<HomePage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+          <Route path="/booking-confirmed" element={<BookingConfirmedPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
