@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ApperIcon from '@/components/ApperIcon'
 import Button from '@/components/atoms/Button'
 import VehicleSelector from '@/components/molecules/VehicleSelector'
 import LocationInput from '@/components/molecules/LocationInput'
 import FareEstimate from '@/components/molecules/FareEstimate'
-import BookingConfirmation from '@/components/molecules/BookingConfirmation'
 import rideService from '@/services/api/rideService'
 import vehicleService from '@/services/api/vehicleService'
 import locationService from '@/services/api/locationService'
-
 const vehicleTypes = [
   { type: 'bike', icon: 'Bike', name: 'Bike', baseFare: 50 },
   { type: 'auto', icon: 'Car', name: 'Auto', baseFare: 80 },
@@ -19,6 +18,7 @@ const vehicleTypes = [
 ]
       
 const BookingForm = ({ onRideBooked }) => {
+  const navigate = useNavigate()
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -27,8 +27,6 @@ const BookingForm = ({ onRideBooked }) => {
   const [dropoffLocation, setDropoffLocation] = useState('')
   const [bookingTimer, setBookingTimer] = useState(0)
   const [isBooking, setIsBooking] = useState(false)
-  const [currentRide, setCurrentRide] = useState(null)
-  
   // New state for enhanced booking features
   const [scheduleType, setScheduleType] = useState('now')
   const [scheduledDateTime, setScheduledDateTime] = useState('')
@@ -171,13 +169,12 @@ const completeBooking = async () => {
           vehicleNumber: selectedVehicle?.vehicleNumber || `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
           photo: `https://ui-avatars.com/api/?name=${selectedVehicle?.driverName || 'Driver'}&size=128&background=random`
         },
-        eta: `${Math.floor(Math.random() * 10) + 3} mins`,
+eta: `${Math.floor(Math.random() * 10) + 3} mins`,
         bookingId: `QR${Date.now()}`,
         createdAt: new Date().toISOString()
       }
 
       const createdRide = await rideService.create(newRide)
-      setCurrentRide(createdRide)
       onRideBooked?.(createdRide)
       setIsBooking(false)
       setBookingTimer(0)
@@ -190,6 +187,14 @@ const completeBooking = async () => {
       setLocationValid(false)
       
       toast.success('🎉 Ride booked successfully!')
+      
+      // Navigate to booking confirmed page with ride data
+      navigate('/booking-confirmed', { 
+        state: { 
+          bookingData: createdRide,
+          bookingId: createdRide.id 
+        } 
+      })
     } catch (err) {
       setError(err.message)
       toast.error('Failed to book ride')
@@ -197,7 +202,6 @@ const completeBooking = async () => {
       setBookingTimer(0)
     }
   }
-      
         const cancelBooking = () => {
           setIsBooking(false)
           setBookingTimer(0)
@@ -286,11 +290,11 @@ if (loading) {
       
             {pickupLocation && dropoffLocation && (
               <FareEstimate fare={calculateFare()} eta={`${Math.floor(Math.random() * 10) + 3}`} />
-            )}
+)}
       
             <AnimatePresence>
-              {!isBooking && !currentRide && (
-<Button
+              {!isBooking && (
+                <Button
                   className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-4 rounded-2xl font-bold text-lg shadow-soft hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   onClick={startBooking}
                   disabled={!pickupLocation || !dropoffLocation || !locationValid || isValidating || !!locationError}
@@ -334,11 +338,7 @@ if (loading) {
                   >
                     Cancel
                   </Button>
-                </motion.div>
-              )}
-      
-              {currentRide && (
-                <BookingConfirmation currentRide={currentRide} />
+</motion.div>
               )}
             </AnimatePresence>
           </div>
