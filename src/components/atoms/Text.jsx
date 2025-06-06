@@ -1,6 +1,6 @@
 const Text = ({ children, className = '', as = 'p', ...props }) => {
         const Tag = as
-        return &lt;Tag className={className} {...props}&gt;{children}&lt;/Tag&gt;
+        return <Tag className={className} {...props}>{children}</Tag>
       }
       
       export default Text
