@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
             {...props}
           >;
             {children}
-          &lt;/motion.div&gt;
+          </motion.div>
         )
       }
       
