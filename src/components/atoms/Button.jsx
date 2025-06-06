@@ -16,25 +16,24 @@ import { motion } from 'framer-motion'
           whileHover: whileHover || { scale: 1.02 },
           whileTap: whileTap || { scale: 0.98 }
         }
-      
-        const buttonContent = (
-          &lt;&gt;
+const buttonContent = (
+          <>
             {iconName && (
-              &lt;ApperIcon name={iconName} size={iconSize} className={iconClass} /&gt;
+              <ApperIcon name={iconName} size={iconSize} className={iconClass} />
             )}
             {children}
-          &lt;/&gt;
+          </>
         )
       
         return (
-          &lt;motion.button
+          <motion.button
             onClick={onClick}
             className={className}
             disabled={disabled}
             {...motionProps}
-          &gt;
+          >
             {buttonContent}
-          &lt;/motion.button&gt;
+          </motion.button>
         )
       }
       
