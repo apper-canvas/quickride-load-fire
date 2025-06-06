@@ -42,9 +42,33 @@ export default {
         'neu-light': 'inset 5px 5px 10px #d1d5db, inset -5px -5px 10px #ffffff',
         'neu-dark': 'inset 5px 5px 10px #111827, inset -5px -5px 10px #374151'
       },
-      borderRadius: {
+borderRadius: {
         'xl': '0.75rem',
         '2xl': '1rem',
+      },
+      animation: {
+        'expand': 'expand 0.3s ease-out',
+        'collapse': 'collapse 0.3s ease-in',
+        'fade-in': 'fadeIn 0.2s ease-out',
+        'slide-down': 'slideDown 0.3s ease-out',
+      },
+      keyframes: {
+        expand: {
+          '0%': { height: '0', opacity: '0' },
+          '100%': { height: 'auto', opacity: '1' }
+        },
+        collapse: {
+          '0%': { height: 'auto', opacity: '1' },
+          '100%': { height: '0', opacity: '0' }
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        }
       }
     },
   },

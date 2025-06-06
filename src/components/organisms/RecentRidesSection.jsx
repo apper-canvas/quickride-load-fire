@@ -81,7 +81,7 @@ const BookingsSection = ({ rides, loading, error }) => {
           </Text>
         </div>
       ) : (
-        <div className="grid gap-4">
+<div className="grid gap-4">
           {filteredRides.map((ride) => (
             <motion.div
               key={ride.id}
@@ -89,7 +89,11 @@ const BookingsSection = ({ rides, loading, error }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <RideCard ride={ride} showStatus={true} />
+              <RideCard 
+                ride={ride} 
+                showStatus={true}
+                onUpdate={() => window.location.reload()}
+              />
             </motion.div>
           ))}
         </div>
