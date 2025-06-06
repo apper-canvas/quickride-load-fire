@@ -1,0 +1,212 @@
+[
+  {
+    "id": "1",
+    "type": "bike",
+    "location": {
+      "coordinates": { "lat": 28.6315, "lng": 77.2167 },
+      "area": "Connaught Place"
+    },
+    "driverName": "Rajesh Kumar",
+    "rating": 4.8,
+    "vehicleNumber": "DL01AB1234",
+    "available": true,
+    "model": "Honda Activa",
+    "color": "Black"
+  },
+  {
+    "id": "2",
+    "type": "bike",
+    "location": {
+      "coordinates": { "lat": 28.5695, "lng": 77.2434 },
+      "area": "Lajpat Nagar"
+    },
+    "driverName": "Mohan Lal",
+    "rating": 4.3,
+    "vehicleNumber": "DL08S7890",
+    "available": true,
+    "model": "TVS Jupiter",
+    "color": "Red"
+  },
+  {
+    "id": "3",
+    "type": "bike",
+    "location": {
+      "coordinates": { "lat": 28.5501, "lng": 77.2500 },
+      "area": "Nehru Place"
+    },
+    "driverName": "Ravi Shankar",
+    "rating": 4.4,
+    "vehicleNumber": "DL05Y5678",
+    "available": true,
+    "model": "Suzuki Access",
+    "color": "Blue"
+  },
+  {
+    "id": "4",
+    "type": "auto",
+    "location": {
+      "coordinates": { "lat": 28.6414, "lng": 77.1906 },
+      "area": "Karol Bagh"
+    },
+    "driverName": "Suresh Singh",
+    "rating": 4.5,
+    "vehicleNumber": "DL01A5678",
+    "available": false,
+    "model": "Bajaj RE",
+    "color": "Yellow-Green"
+  },
+  {
+    "id": "5",
+    "type": "auto",
+    "location": {
+      "coordinates": { "lat": 28.6469, "lng": 77.1208 },
+      "area": "Rajouri Garden"
+    },
+    "driverName": "Ramesh Chand",
+    "rating": 4.6,
+    "vehicleNumber": "DL01B2345",
+    "available": true,
+    "model": "Bajaj RE Compact",
+    "color": "Yellow-Black"
+  },
+  {
+    "id": "6",
+    "type": "auto",
+    "location": {
+      "coordinates": { "lat": 28.5214, "lng": 77.2069 },
+      "area": "Saket"
+    },
+    "driverName": "Mukesh Kumar",
+    "rating": 4.7,
+    "vehicleNumber": "DL06Z9012",
+    "available": true,
+    "model": "TVS King",
+    "color": "Yellow-Green"
+  },
+  {
+    "id": "7",
+    "type": "taxi",
+    "location": {
+      "coordinates": { "lat": 28.4595, "lng": 77.0266 },
+      "area": "Cyber City"
+    },
+    "driverName": "Amit Sharma",
+    "rating": 4.9,
+    "vehicleNumber": "HR26BV9012",
+    "available": true,
+    "model": "Maruti Dzire",
+    "color": "White"
+  },
+  {
+    "id": "8",
+    "type": "taxi",
+    "location": {
+      "coordinates": { "lat": 28.5976, "lng": 77.2306 },
+      "area": "Khan Market"
+    },
+    "driverName": "Deepak Kumar",
+    "rating": 4.8,
+    "vehicleNumber": "DL02CV6789",
+    "available": false,
+    "model": "Hyundai Xcent",
+    "color": "Silver"
+  },
+  {
+    "id": "9",
+    "type": "taxi",
+    "location": {
+      "coordinates": { "lat": 28.5494, "lng": 77.2001 },
+      "area": "Hauz Khas"
+    },
+    "driverName": "Vinod Tiwari",
+    "rating": 4.6,
+    "vehicleNumber": "DL04MN3456",
+    "available": true,
+    "model": "Toyota Etios",
+    "color": "Grey"
+  },
+  {
+    "id": "10",
+    "type": "car",
+    "location": {
+      "coordinates": { "lat": 28.5705, "lng": 77.3200 },
+      "area": "Sector 18 Noida"
+    },
+    "driverName": "Vikash Yadav",
+    "rating": 4.7,
+    "vehicleNumber": "UP16CX3456",
+    "available": true,
+    "model": "Honda City",
+    "color": "Pearl White"
+  },
+  {
+    "id": "11",
+    "type": "car",
+    "location": {
+      "coordinates": { "lat": 28.5244, "lng": 77.1589 },
+      "area": "Vasant Kunj"
+    },
+    "driverName": "Sandeep Gupta",
+    "rating": 4.9,
+    "vehicleNumber": "DL03X1234",
+    "available": true,
+    "model": "Maruti Ciaz",
+    "color": "Blue"
+  },
+  {
+    "id": "12",
+    "type": "car",
+    "location": {
+      "coordinates": { "lat": 28.5387, "lng": 77.2500 },
+      "area": "Kalkaji"
+    },
+    "driverName": "Manoj Verma",
+    "rating": 4.5,
+    "vehicleNumber": "DL07PQ7890",
+    "available": true,
+    "model": "Hyundai Verna",
+    "color": "Black"
+  },
+  {
+    "id": "13",
+    "type": "bike",
+    "location": {
+      "coordinates": { "lat": 28.6506, "lng": 77.2334 },
+      "area": "Chandni Chowk"
+    },
+    "driverName": "Sanjay Kumar",
+    "rating": 4.2,
+    "vehicleNumber": "DL09ST2345",
+    "available": true,
+    "model": "Hero Maestro",
+    "color": "Orange"
+  },
+  {
+    "id": "14",
+    "type": "auto",
+    "location": {
+      "coordinates": { "lat": 28.5535, "lng": 77.2588 },
+      "area": "Kalkaji"
+    },
+    "driverName": "Ashok Sharma",
+    "rating": 4.4,
+    "vehicleNumber": "DL08UV6789",
+    "available": true,
+    "model": "Piaggio Ape",
+    "color": "Yellow-Blue"
+  },
+  {
+    "id": "15",
+    "type": "taxi",
+    "location": {
+      "coordinates": { "lat": 28.6129, "lng": 77.2295 },
+      "area": "India Gate"
+    },
+    "driverName": "Prakash Singh",
+    "rating": 4.7,
+    "vehicleNumber": "DL01WX9012",
+    "available": true,
+    "model": "Tata Tigor",
+    "color": "Red"
+    }
+]

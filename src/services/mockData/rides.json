@@ -1,0 +1,232 @@
+[
+  {
+    "id": "1",
+    "vehicleType": "bike",
+    "pickupLocation": {
+      "address": "Connaught Place, New Delhi",
+      "coordinates": { "lat": 28.6315, "lng": 77.2167 },
+      "landmark": "Central Park"
+    },
+    "dropoffLocation": {
+      "address": "India Gate, New Delhi",
+      "coordinates": { "lat": 28.6129, "lng": 77.2295 },
+      "landmark": "War Memorial"
+    },
+    "fare": 85,
+    "status": "completed",
+    "driverInfo": {
+      "name": "Rajesh Kumar",
+      "rating": 4.8,
+      "vehicleNumber": "DL01AB1234",
+      "phone": "+91-9876543210"
+    },
+    "eta": "12 mins"
+  },
+  {
+    "id": "2",
+    "vehicleType": "auto",
+    "pickupLocation": {
+      "address": "Karol Bagh Metro Station",
+      "coordinates": { "lat": 28.6414, "lng": 77.1906 },
+      "landmark": "Metro Station Gate 2"
+    },
+    "dropoffLocation": {
+      "address": "Chandni Chowk",
+      "coordinates": { "lat": 28.6506, "lng": 77.2334 },
+      "landmark": "Red Fort"
+    },
+    "fare": 120,
+    "status": "ongoing",
+    "driverInfo": {
+      "name": "Suresh Singh",
+      "rating": 4.5,
+      "vehicleNumber": "DL01A5678",
+      "phone": "+91-9876543211"
+    },
+    "eta": "8 mins"
+  },
+  {
+    "id": "3",
+    "vehicleType": "taxi",
+    "pickupLocation": {
+      "address": "Cyber City, Gurgaon",
+      "coordinates": { "lat": 28.4595, "lng": 77.0266 },
+      "landmark": "DLF Phase 2"
+    },
+    "dropoffLocation": {
+      "address": "IGI Airport Terminal 3",
+      "coordinates": { "lat": 28.5562, "lng": 77.0999 },
+      "landmark": "Departure Gate"
+    },
+    "fare": 450,
+    "status": "confirmed",
+    "driverInfo": {
+      "name": "Amit Sharma",
+      "rating": 4.9,
+      "vehicleNumber": "HR26BV9012",
+      "phone": "+91-9876543212"
+    },
+    "eta": "25 mins"
+  },
+  {
+    "id": "4",
+    "vehicleType": "car",
+    "pickupLocation": {
+      "address": "Sector 18, Noida",
+      "coordinates": { "lat": 28.5705, "lng": 77.3200 },
+      "landmark": "Atta Market"
+    },
+    "dropoffLocation": {
+      "address": "Lotus Temple",
+      "coordinates": { "lat": 28.5535, "lng": 77.2588 },
+      "landmark": "Bahai Temple"
+    },
+    "fare": 280,
+    "status": "completed",
+    "driverInfo": {
+      "name": "Vikash Yadav",
+      "rating": 4.7,
+      "vehicleNumber": "UP16CX3456",
+      "phone": "+91-9876543213"
+    },
+    "eta": "18 mins"
+  },
+  {
+    "id": "5",
+    "vehicleType": "bike",
+    "pickupLocation": {
+      "address": "Lajpat Nagar Market",
+      "coordinates": { "lat": 28.5695, "lng": 77.2434 },
+      "landmark": "Central Market"
+    },
+    "dropoffLocation": {
+      "address": "Hauz Khas Village",
+      "coordinates": { "lat": 28.5494, "lng": 77.2001 },
+      "landmark": "Deer Park"
+    },
+    "fare": 95,
+    "status": "cancelled",
+    "driverInfo": {
+      "name": "Mohan Lal",
+      "rating": 4.3,
+      "vehicleNumber": "DL08S7890",
+      "phone": "+91-9876543214"
+    },
+    "eta": "15 mins"
+  },
+  {
+    "id": "6",
+    "vehicleType": "auto",
+    "pickupLocation": {
+      "address": "Rajouri Garden Metro",
+      "coordinates": { "lat": 28.6469, "lng": 77.1208 },
+      "landmark": "District Centre"
+    },
+    "dropoffLocation": {
+      "address": "Janakpuri West Metro",
+      "coordinates": { "lat": 28.6219, "lng": 77.0814 },
+      "landmark": "Metro Station"
+    },
+    "fare": 75,
+    "status": "completed",
+    "driverInfo": {
+      "name": "Ramesh Chand",
+      "rating": 4.6,
+      "vehicleNumber": "DL01B2345",
+      "phone": "+91-9876543215"
+    },
+    "eta": "10 mins"
+  },
+  {
+    "id": "7",
+    "vehicleType": "taxi",
+    "pickupLocation": {
+      "address": "Khan Market",
+      "coordinates": { "lat": 28.5976, "lng": 77.2306 },
+      "landmark": "Middle Lane"
+    },
+    "dropoffLocation": {
+      "address": "Qutub Minar",
+      "coordinates": { "lat": 28.5245, "lng": 77.1855 },
+      "landmark": "Archaeological Park"
+    },
+    "fare": 185,
+    "status": "ongoing",
+    "driverInfo": {
+      "name": "Deepak Kumar",
+      "rating": 4.8,
+      "vehicleNumber": "DL02CV6789",
+      "phone": "+91-9876543216"
+    },
+    "eta": "22 mins"
+  },
+  {
+    "id": "8",
+    "vehicleType": "car",
+    "pickupLocation": {
+      "address": "Vasant Kunj Mall",
+      "coordinates": { "lat": 28.5244, "lng": 77.1589 },
+      "landmark": "Ambience Mall"
+    },
+    "dropoffLocation": {
+      "address": "Greater Kailash M Block Market",
+      "coordinates": { "lat": 28.5494, "lng": 77.2364 },
+      "landmark": "M Block Market"
+    },
+    "fare": 220,
+    "status": "confirmed",
+    "driverInfo": {
+      "name": "Sandeep Gupta",
+      "rating": 4.9,
+      "vehicleNumber": "DL03X1234",
+      "phone": "+91-9876543217"
+    },
+    "eta": "16 mins"
+  },
+  {
+    "id": "9",
+    "vehicleType": "bike",
+    "pickupLocation": {
+      "address": "Nehru Place Metro",
+      "coordinates": { "lat": 28.5501, "lng": 77.2500 },
+      "landmark": "Bus Terminal"
+    },
+    "dropoffLocation": {
+      "address": "AIIMS Delhi",
+      "coordinates": { "lat": 28.5672, "lng": 77.2100 },
+      "landmark": "Main Gate"
+    },
+    "fare": 70,
+    "status": "completed",
+    "driverInfo": {
+      "name": "Ravi Shankar",
+      "rating": 4.4,
+      "vehicleNumber": "DL05Y5678",
+      "phone": "+91-9876543218"
+    },
+    "eta": "14 mins"
+  },
+  {
+    "id": "10",
+    "vehicleType": "auto",
+    "pickupLocation": {
+      "address": "Saket Metro Station",
+      "coordinates": { "lat": 28.5214, "lng": 77.2069 },
+      "landmark": "Select City Walk Mall"
+    },
+    "dropoffLocation": {
+      "address": "Malviya Nagar Metro",
+      "coordinates": { "lat": 28.5287, "lng": 77.2069 },
+      "landmark": "Metro Station Gate 1"
+    },
+    "fare": 45,
+    "status": "completed",
+    "driverInfo": {
+      "name": "Mukesh Kumar",
+      "rating": 4.7,
+      "vehicleNumber": "DL06Z9012",
+      "phone": "+91-9876543219"
+    },
+    "eta": "6 mins"
+  }
+]
