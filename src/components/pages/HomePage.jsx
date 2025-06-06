@@ -3,17 +3,17 @@ import TopHeader from '@/components/organisms/TopHeader'
       import QuickStatsSection from '@/components/organisms/QuickStatsSection'
       import FeaturesGrid from '@/components/organisms/FeaturesGrid'
       
-      const HomePage = ({ isDarkMode, setIsDarkMode }) => {
+const HomePage = ({ isDarkMode, setIsDarkMode }) => {
         return (
-          &lt;div className="min-h-screen bg-gradient-to-br from-surface-50 to-surface-100 dark:from-surface-900 dark:to-surface-800 transition-all duration-500"&gt;
-            &lt;TopHeader isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} /&gt;
+          <div className="min-h-screen bg-gradient-to-br from-surface-50 to-surface-100 dark:from-surface-900 dark:to-surface-800 transition-all duration-500">
+            <TopHeader isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
       
-            &lt;main className="relative"&gt;
-              &lt;MainFeatureSection /&gt;
-              &lt;QuickStatsSection /&gt;
-              &lt;FeaturesGrid /&gt;
-            &lt;/main&gt;
-          &lt;/div&gt;
+            <main className="relative">
+              <MainFeatureSection />
+              <QuickStatsSection />
+              <FeaturesGrid />
+            </main>
+          </div>
         )
       }
       
