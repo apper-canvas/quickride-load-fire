@@ -33,17 +33,8 @@ const BookingForm = ({ onRideBooked }) => {
   const [passengerCount, setPassengerCount] = useState(1)
   const [specialRequests, setSpecialRequests] = useState('')
   const [rideType, setRideType] = useState('personal')
-// Enhanced shared ride matching state
-  const [isMatching, setIsMatching] = useState(false)
-  const [matchingTimer, setMatchingTimer] = useState(0)
+// Enhanced shared ride matching state (background only)
   const [matchResult, setMatchResult] = useState(null)
-  const [showFallbackOption, setShowFallbackOption] = useState(false)
-  const [matchingStatus, setMatchingStatus] = useState(null)
-  const [matchingProgress, setMatchingProgress] = useState({
-    stage: 'idle', // 'idle', 'searching', 'found', 'timeout'
-    message: '',
-    progress: 0
-  })
   
   // Location validation state
   const [locationError, setLocationError] = useState('')
@@ -66,42 +57,6 @@ const BookingForm = ({ onRideBooked }) => {
     return () => clearTimeout(timer)
   }, [isBooking, bookingTimer])
 
-  // Enhanced shared ride matching timer with progress tracking
-  useEffect(() => {
-    let timer
-    if (isMatching && matchingTimer > 0) {
-      timer = setTimeout(() => {
-        setMatchingTimer(prev => {
-          const newTime = prev - 1
-          const totalTime = 300 // 5 minutes
-          const progress = ((totalTime - newTime) / totalTime) * 100
-          
-          setMatchingProgress(prevProgress => ({
-            ...prevProgress,
-            progress: Math.min(progress, 95) // Cap at 95% until match found
-          }))
-          
-          return newTime
-        })
-      }, 1000)
-    } else if (isMatching && matchingTimer === 0) {
-      handleMatchingTimeout()
-    }
-    return () => clearTimeout(timer)
-  }, [isMatching, matchingTimer])
-
-  // Background status checking for shared rides
-  useEffect(() => {
-    let statusChecker
-    if (isMatching) {
-      statusChecker = setInterval(() => {
-        updateMatchingProgress()
-      }, 5000) // Check every 5 seconds
-    }
-    return () => {
-      if (statusChecker) clearInterval(statusChecker)
-    }
-  }, [isMatching])
 
   // Validate locations when they change
   useEffect(() => {
@@ -193,125 +148,11 @@ const startBooking = () => {
       toast.error('No vehicles available for this type')
       return
     }
-
-    if (rideType === 'shared') {
-      startSharedRideMatching()
-    } else {
-      setIsBooking(true)
-      setBookingTimer(3)
-      toast.info('Processing your booking...')
-    }
-  }
-const startSharedRideMatching = async () => {
-    setIsMatching(true)
-    setMatchingTimer(300) // 5 minutes for matching
-    setShowFallbackOption(false)
-    setMatchingProgress({
-      stage: 'searching',
-      message: 'Finding shared ride matches...',
-      progress: 5
-    })
-    toast.info('🔍 Finding shared ride matches...')
-
-    try {
-      const rideRequest = {
-        pickupLocation: { address: pickupLocation },
-        dropoffLocation: { address: dropoffLocation },
-        vehicleType: selectedVehicleType,
-        passengerCount,
-        rideType: 'shared'
-      }
-
-      const matchResult = await rideService.findSharedRideMatches(rideRequest)
-      setMatchResult(matchResult)
-
-      if (matchResult.success && matchResult.matchType === 'immediate') {
-        setMatchingProgress({
-          stage: 'found',
-          message: 'Match found! Confirming booking...',
-          progress: 100
-        })
-        toast.success('✅ Shared ride match found!')
-        setIsMatching(false)
-        setMatchingTimer(0)
-        proceedWithSharedBooking(matchResult)
-      } else {
-        // Start background matching process
-        setMatchingProgress({
-          stage: 'searching',
-          message: 'Searching for compatible riders...',
-          progress: 10
-        })
-        toast.info('🔄 Background search started...')
-      }
-    } catch (error) {
-      toast.error('Error finding shared ride matches')
-      handleMatchingTimeout()
-    }
-  }
-
-  const updateMatchingProgress = () => {
-    if (!isMatching) return
-
-    const progressMessages = [
-      'Analyzing nearby ride requests...',
-      'Checking route compatibility...',
-      'Validating passenger preferences...',
-      'Optimizing shared routes...',
-      'Almost found a match...'
-    ]
-
-    const currentProgress = matchingProgress.progress
-    const newProgress = Math.min(currentProgress + Math.random() * 10, 90)
-    const messageIndex = Math.floor((newProgress / 100) * progressMessages.length)
-
-    setMatchingProgress(prev => ({
-      ...prev,
-      message: progressMessages[messageIndex] || prev.message,
-      progress: newProgress
-    }))
-  }
-
-  const handleMatchingTimeout = () => {
-    setIsMatching(false)
-    setMatchingTimer(0)
-    setShowFallbackOption(true)
-    setMatchingProgress({
-      stage: 'timeout',
-      message: 'No matches found',
-      progress: 100
-    })
-    toast.warning('⏰ No shared ride matches found. Book a personal cab instead?')
-  }
-
-  const proceedWithSharedBooking = async (matchResult) => {
-    setIsMatching(false)
+// Process booking directly for both shared and personal rides
     setIsBooking(true)
     setBookingTimer(3)
-    setMatchingProgress({
-      stage: 'found',
-      message: 'Match confirmed! Processing booking...',
-      progress: 100
-    })
-    toast.info('✅ Confirming your shared ride...')
+    toast.info('Processing your booking...')
   }
-
-  const bookPersonalCabFallback = () => {
-    setRideType('personal')
-    setShowFallbackOption(false)
-    setIsBooking(true)
-    setBookingTimer(3)
-    setMatchingProgress({ stage: 'idle', message: '', progress: 0 })
-    toast.info('🚗 Booking personal cab...')
-  }
-
-  const cancelSharedRideSearch = () => {
-    setIsMatching(false)
-    setMatchingTimer(0)
-    setShowFallbackOption(false)
-    setMatchingProgress({ stage: 'idle', message: '', progress: 0 })
-    toast.info('❌ Shared ride search cancelled')
-}
       
 const completeBooking = async () => {
     try {
@@ -392,17 +233,14 @@ const completeBooking = async () => {
       setIsBooking(false)
       setBookingTimer(0)
       
-      // Reset form
+// Reset form
       setPickupLocation('')
       setDropoffLocation('')
       setSpecialRequests('')
       setLocationError('')
       setLocationValid(false)
       setRideType('personal')
-      setIsMatching(false)
-      setMatchingTimer(0)
       setMatchResult(null)
-      setShowFallbackOption(false)
       
       // Show success message with booking details
       const bookingType = rideType === 'shared' ? 'Shared ride' : 'Personal cab'
@@ -528,7 +366,7 @@ return (
             )}
       
 <AnimatePresence>
-              {!isBooking && !isMatching && !showFallbackOption && (
+              {!isBooking && (
                 <Button
                   className={`w-full py-4 rounded-2xl font-bold text-lg shadow-soft hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 ${
                     rideType === 'shared' 
@@ -552,136 +390,12 @@ return (
                     </>
                   ) : (
                     <span>
-                      {rideType === 'shared' ? 'Find Shared Ride - 30% Off' : 'Book Now - Instant Confirmation'}
+                      {rideType === 'shared' ? 'Book Shared Ride - 30% Off' : 'Book Now - Instant Confirmation'}
                     </span>
                   )}
                 </Button>
               )}
 
-{/* Enhanced Shared Ride Matching Status */}
-              {isMatching && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="text-center space-y-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 rounded-2xl border border-green-200 dark:border-green-800"
-                >
-                  {/* Header with animated icon */}
-                  <div className="flex items-center justify-center space-x-3">
-                    <motion.div 
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                      className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full"
-                    />
-                    <ApperIcon name="Users" size={24} className="text-green-600 animate-pulse-slow" />
-                    <motion.div 
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-3 h-3 bg-green-500 rounded-full"
-                    />
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="w-full">
-                    <div className="flex justify-between text-sm text-green-600 dark:text-green-400 mb-2">
-                      <span>Finding Shared Ride Match</span>
-                      <span>{Math.floor(matchingProgress.progress)}%</span>
-                    </div>
-                    <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2.5">
-                      <motion.div 
-                        className="bg-gradient-to-r from-green-500 to-blue-500 h-2.5 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${matchingProgress.progress}%` }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status message */}
-                  <div>
-                    <div className="text-lg font-bold text-green-700 dark:text-green-300">
-                      {matchingProgress.message}
-                    </div>
-                    <div className="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center justify-center space-x-2">
-                      <span>{Math.floor(matchingTimer / 60)}:{(matchingTimer % 60).toString().padStart(2, '0')} remaining</span>
-                      <div className="matching-dots flex space-x-1">
-                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
-                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
-                        <span className="w-1 h-1 bg-green-500 rounded-full"></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress indicators */}
-                  <div className="grid grid-cols-3 gap-4 text-xs">
-                    <div className="flex flex-col items-center space-y-1">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        matchingProgress.progress > 20 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
-                      }`}>
-                        <ApperIcon name="Search" size={16} />
-                      </div>
-                      <span className="text-green-600 dark:text-green-400">Searching</span>
-                    </div>
-                    <div className="flex flex-col items-center space-y-1">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        matchingProgress.progress > 60 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
-                      }`}>
-                        <ApperIcon name="Route" size={16} />
-                      </div>
-                      <span className="text-green-600 dark:text-green-400">Matching</span>
-                    </div>
-                    <div className="flex flex-col items-center space-y-1">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        matchingProgress.progress > 90 ? 'bg-green-500 text-white' : 'bg-green-200 text-green-600'
-                      }`}>
-                        <ApperIcon name="CheckCircle" size={16} />
-                      </div>
-                      <span className="text-green-600 dark:text-green-400">Confirming</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={cancelSharedRideSearch}
-                    className="px-6 py-2 border border-green-300 dark:border-green-600 rounded-xl text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-800 transition-colors"
-                  >
-                    Cancel Search
-                  </Button>
-                </motion.div>
-              )}
-
-              {/* Fallback Option */}
-              {showFallbackOption && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-4 bg-orange-50 dark:bg-orange-900/20 p-6 rounded-2xl border border-orange-200 dark:border-orange-800"
-                >
-                  <div className="text-center">
-                    <ApperIcon name="AlertCircle" size={24} className="text-orange-600 mx-auto mb-2" />
-                    <div className="text-lg font-semibold text-orange-700 dark:text-orange-300">
-                      No Shared Rides Available
-                    </div>
-                    <div className="text-sm text-orange-600 dark:text-orange-400 mt-1">
-                      Would you like to book a personal cab instead?
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      onClick={() => setShowFallbackOption(false)}
-                      className="px-4 py-2 border border-orange-300 dark:border-orange-600 rounded-xl text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-800 transition-colors"
-                    >
-                      Try Again Later
-                    </Button>
-                    <Button
-                      onClick={bookPersonalCabFallback}
-                      className="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors"
-                    >
-                      Book Personal Cab
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
       
 {isBooking && (
                 <motion.div

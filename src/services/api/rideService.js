@@ -187,7 +187,7 @@ class RideService extends BaseService {
     return Math.random() * 5;
   }
 
-  async createSharedRide(rideData) {
+async createSharedRide(rideData) {
     const { mockDelay } = await import('../index.js');
     await mockDelay(300);
     const now = new Date();
@@ -198,20 +198,13 @@ class RideService extends BaseService {
         id: Date.now(),
         rideType: 'shared',
         fare: Math.round(rideData.fare * 0.7), // 30% discount
-        isMatching: true, // Set to true to show matching status
+        isMatching: false, // No visible matching UI
         matchingStartTime: now.toISOString(),
         status: 'pending', // Start as pending for background matching
         bookingTime: now.toISOString(),
-        createdAt: now.toISOString(),
-        pickupLocation: rideData.pickupLocation || { address: '' },
-        dropoffLocation: rideData.dropoffLocation || { address: '' },
-        vehicleType: rideData.vehicleType || 'bike',
-        passengerCount: rideData.passengerCount || 1,
-        bookingId: rideData.bookingId || `QR${Date.now()}`,
-matchingTimeout: now.getTime() + (180 * 1000) // 3 minutes from now (180 seconds)
+        matchingTimeout: now.getTime() + (3 * 60 * 1000) // 3 minutes from now
       };
       
-      // Save to persistent storage first
       const savedRide = await this.create(sharedRideData);
       
       // Add to matching service queue
@@ -233,7 +226,6 @@ matchingTimeout: now.getTime() + (180 * 1000) // 3 minutes from now (180 seconds
       throw new Error('Failed to save shared ride booking. Please try again.');
     }
   }
-
   async setupBackgroundMatching(savedRide) {
     const { mockDelay } = await import('../index.js');
     
