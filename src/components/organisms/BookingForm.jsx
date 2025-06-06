@@ -155,114 +155,245 @@ const startBooking = () => {
   }
       
 const completeBooking = async () => {
-    try {
-      const available = getAvailableVehicles()
-      const selectedVehicle = available[Math.floor(Math.random() * available.length)]
+    let saveAttempts = 0;
+    const maxSaveAttempts = 3;
+    
+    const attemptBookingSave = async () => {
+      saveAttempts++;
       
-      const originalFare = (() => {
-        const basePrice = vehicleTypes.find(v => v.type === selectedVehicleType)?.baseFare || 50
-        const distance = Math.random() * 10 + 2
-        return Math.round(basePrice + (distance * 8))
-      })()
-      
-      const newRide = {
-        vehicleType: selectedVehicleType,
-        pickupLocation: { address: pickupLocation.trim() },
-        dropoffLocation: { address: dropoffLocation.trim() },
-        fare: rideType === 'shared' ? Math.round(originalFare * 0.7) : originalFare,
-        originalFare: originalFare,
-        status: 'pending', // Always start as pending for consistency
-        rideType,
-        scheduleType,
-        scheduledDateTime: scheduleType === 'later' ? scheduledDateTime : null,
-        passengerCount,
-        specialRequests: specialRequests.trim() || null,
-        driverInfo: {
-          name: selectedVehicle?.driverName || `Driver ${Math.floor(Math.random() * 999) + 1}`,
-          rating: selectedVehicle?.rating || (4.0 + Math.random()).toFixed(1),
-          vehicleNumber: selectedVehicle?.vehicleNumber || `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
-          photo: `https://ui-avatars.com/api/?name=${selectedVehicle?.driverName || 'Driver'}&size=128&background=random`
-        },
-        eta: `${Math.floor(Math.random() * 10) + 3} mins`,
-        bookingId: `QR${Date.now()}`,
-        bookingTime: scheduleType === 'now' ? new Date().toISOString() : (scheduledDateTime || new Date().toISOString()),
-        createdAt: new Date().toISOString(),
-        bookingType: scheduleType === 'now' ? 'immediate' : 'scheduled',
-        ...(rideType === 'shared' && matchResult?.success && {
-          matchedWith: matchResult.matchedRide?.id,
-          estimatedPickupTime: matchResult.estimatedPickupTime,
-          additionalPassengers: 1
+      try {
+        // Show saving progress
+        toast.info(`💾 Saving booking... (Attempt ${saveAttempts}/${maxSaveAttempts})`)
+        
+        const available = getAvailableVehicles()
+        if (available.length === 0) {
+          throw new Error('No vehicles available for selected type')
+        }
+        
+        const selectedVehicle = available[Math.floor(Math.random() * available.length)]
+        
+        const originalFare = (() => {
+          const basePrice = vehicleTypes.find(v => v.type === selectedVehicleType)?.baseFare || 50
+          const distance = Math.random() * 10 + 2
+          return Math.round(basePrice + (distance * 8))
+        })()
+        
+        // Pre-validate all required data
+        const pickupAddress = pickupLocation.trim()
+        const dropoffAddress = dropoffLocation.trim()
+        
+        if (!pickupAddress || !dropoffAddress) {
+          throw new Error('Both pickup and dropoff locations are required')
+        }
+        
+        if (!selectedVehicleType) {
+          throw new Error('Vehicle type selection is required')
+        }
+        
+        if (originalFare <= 0) {
+          throw new Error('Invalid fare calculation')
+        }
+        
+        if (passengerCount < 1 || passengerCount > 6) {
+          throw new Error('Passenger count must be between 1 and 6')
+        }
+        
+        const newRide = {
+          vehicleType: selectedVehicleType,
+          pickupLocation: { address: pickupAddress },
+          dropoffLocation: { address: dropoffAddress },
+          fare: rideType === 'shared' ? Math.round(originalFare * 0.7) : originalFare,
+          originalFare: originalFare,
+          status: 'pending', // Always start as pending for consistency
+          rideType,
+          scheduleType,
+          scheduledDateTime: scheduleType === 'later' ? scheduledDateTime : null,
+          passengerCount,
+          specialRequests: specialRequests.trim() || null,
+          driverInfo: {
+            name: selectedVehicle?.driverName || `Driver ${Math.floor(Math.random() * 999) + 1}`,
+            rating: selectedVehicle?.rating || (4.0 + Math.random()).toFixed(1),
+            vehicleNumber: selectedVehicle?.vehicleNumber || `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 9000) + 1000}`,
+            photo: `https://ui-avatars.com/api/?name=${selectedVehicle?.driverName || 'Driver'}&size=128&background=random`
+          },
+          eta: `${Math.floor(Math.random() * 10) + 3} mins`,
+          bookingId: `QR${Date.now()}`,
+          bookingTime: scheduleType === 'now' ? new Date().toISOString() : (scheduledDateTime || new Date().toISOString()),
+          createdAt: new Date().toISOString(),
+          bookingType: scheduleType === 'now' ? 'immediate' : 'scheduled',
+          userAgent: navigator.userAgent,
+          clientTimestamp: Date.now(),
+          ...(rideType === 'shared' && matchResult?.success && {
+            matchedWith: matchResult.matchedRide?.id,
+            estimatedPickupTime: matchResult.estimatedPickupTime,
+            additionalPassengers: 1
+          })
+        }
+
+        let createdRide;
+        
+        // Use different service methods based on ride type with enhanced error handling
+        if (rideType === 'shared') {
+          console.log('Creating shared ride booking:', newRide)
+          createdRide = await rideService.createSharedRide(newRide)
+        } else {
+          console.log('Creating personal ride booking:', newRide)
+          createdRide = await rideService.create(newRide)
+        }
+        
+        // Comprehensive validation of saved booking
+        if (!createdRide) {
+          throw new Error('Save operation returned null result')
+        }
+        
+        if (!createdRide.id) {
+          throw new Error('Booking ID not generated')
+        }
+
+        // Verify all critical data was saved correctly
+        const validationErrors = []
+        
+        if (!createdRide.pickupLocation?.address) {
+          validationErrors.push('Pickup location not saved')
+        }
+        
+        if (!createdRide.dropoffLocation?.address) {
+          validationErrors.push('Dropoff location not saved')
+        }
+        
+        if (!createdRide.vehicleType) {
+          validationErrors.push('Vehicle type not saved')
+        }
+        
+        if (!createdRide.fare || createdRide.fare <= 0) {
+          validationErrors.push('Fare not saved correctly')
+        }
+        
+        if (!createdRide.status) {
+          validationErrors.push('Booking status not set')
+        }
+        
+        if (!createdRide.bookingTime) {
+          validationErrors.push('Booking time not saved')
+        }
+        
+        if (validationErrors.length > 0) {
+          throw new Error(`Data integrity check failed: ${validationErrors.join(', ')}`)
+        }
+        
+        // Verify data consistency
+        if (createdRide.pickupLocation.address !== pickupAddress) {
+          throw new Error('Pickup location data mismatch detected')
+        }
+        
+        if (createdRide.dropoffLocation.address !== dropoffAddress) {
+          throw new Error('Dropoff location data mismatch detected')
+        }
+        
+        if (createdRide.vehicleType !== selectedVehicleType) {
+          throw new Error('Vehicle type data mismatch detected')
+        }
+        
+        console.log('Booking validation completed successfully:', {
+          id: createdRide.id,
+          vehicleType: createdRide.vehicleType,
+          rideType: createdRide.rideType,
+          status: createdRide.status,
+          fare: createdRide.fare
         })
+        
+        // Show success message
+        const bookingType = rideType === 'shared' ? 'Shared ride' : 'Personal cab'
+        toast.success(`✅ ${bookingType} booking saved successfully! All data verified.`, {
+          autoClose: 5000
+        })
+        
+        // Update parent component with new booking
+        onRideBooked?.(createdRide)
+        
+        setIsBooking(false)
+        setBookingTimer(0)
+        
+        // Reset form
+        setPickupLocation('')
+        setDropoffLocation('')
+        setSpecialRequests('')
+        setLocationError('')
+        setLocationValid(false)
+        setRideType('personal')
+        setMatchResult(null)
+        
+        // Navigate to booking confirmed page with ride data
+        navigate('/booking-confirmed', { 
+          state: { 
+            bookingData: createdRide,
+            bookingId: createdRide.id 
+          } 
+        })
+        
+        return createdRide;
+        
+      } catch (err) {
+        console.error(`Booking save attempt ${saveAttempts} failed:`, err)
+        
+        // Determine if we should retry
+        const isRetryableError = err.message.includes('network') || 
+                                err.message.includes('timeout') || 
+                                err.message.includes('connection') ||
+                                err.message.includes('Save operation returned') ||
+                                saveAttempts < 2;
+        
+        if (saveAttempts < maxSaveAttempts && isRetryableError) {
+          toast.warning(`⚠️ Save attempt ${saveAttempts} failed. Retrying in 2 seconds...`, {
+            autoClose: 2000
+          })
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          return attemptBookingSave()
+        } else {
+          // Final failure
+          setError(err.message || 'Failed to save booking')
+          setIsBooking(false)
+          setBookingTimer(0)
+          
+          let errorMessage = err.message || 'Failed to save booking'
+          let actionableTips = ''
+          
+          if (err.message.includes('network') || err.message.includes('connection')) {
+            actionableTips = ' Please check your internet connection and try again.'
+          } else if (err.message.includes('validation')) {
+            actionableTips = ' Please verify all fields are filled correctly.'
+          } else if (err.message.includes('integrity') || err.message.includes('mismatch')) {
+            actionableTips = ' Please refresh the page and try booking again.'
+          } else {
+            actionableTips = ' Please try again or contact support if the issue persists.'
+          }
+          
+          toast.error(`❌ ${errorMessage}${actionableTips}`, {
+            autoClose: 10000,
+            closeButton: true
+          })
+          
+          // Show retry option for certain error types
+          if (isRetryableError) {
+            setTimeout(() => {
+              toast.info('💡 You can try booking again when ready.', {
+                autoClose: 5000
+              })
+            }, 1000)
+          }
+          
+          throw err;
+        }
       }
-
-      // Validate required fields before saving
-      if (!newRide.pickupLocation.address || !newRide.dropoffLocation.address) {
-        throw new Error('Pickup and dropoff locations are required')
-      }
-
-      if (!newRide.vehicleType || !newRide.fare) {
-        throw new Error('Vehicle type and fare information are required')
-      }
-
-      let createdRide;
-      
-      // Use different service methods based on ride type
-      if (rideType === 'shared') {
-        toast.info('💾 Saving shared ride booking...')
-        createdRide = await rideService.createSharedRide(newRide)
-        toast.success('✅ Shared ride booking saved successfully!')
-      } else {
-        toast.info('💾 Saving booking...')
-        createdRide = await rideService.create(newRide)
-        toast.success('✅ Booking saved successfully!')
-      }
-      
-      // Verify booking was saved with all required data
-      if (!createdRide || !createdRide.id) {
-        throw new Error('Booking was not saved properly')
-      }
-
-      // Verify critical booking information
-      if (!createdRide.pickupLocation?.address || !createdRide.dropoffLocation?.address) {
-        throw new Error('Booking location information was not saved properly')
-      }
-
-      // Update parent component with new booking
-      onRideBooked?.(createdRide)
-      
-      setIsBooking(false)
-      setBookingTimer(0)
-      
-// Reset form
-      setPickupLocation('')
-      setDropoffLocation('')
-      setSpecialRequests('')
-      setLocationError('')
-      setLocationValid(false)
-      setRideType('personal')
-      setMatchResult(null)
-      
-      // Show success message with booking details
-      const bookingType = rideType === 'shared' ? 'Shared ride' : 'Personal cab'
-      toast.success(`🎉 ${bookingType} booking confirmed! Added to Your Bookings.`, {
-        autoClose: 5000
-      })
-      
-      // Navigate to booking confirmed page with ride data
-      navigate('/booking-confirmed', { 
-        state: { 
-          bookingData: createdRide,
-          bookingId: createdRide.id 
-        } 
-      })
-    } catch (err) {
-      console.error('Booking error:', err)
-      setError(err.message || 'Failed to save booking')
-      toast.error(`❌ ${err.message || 'Failed to save booking. Please try again.'}`, {
-        autoClose: 8000
-      })
-      setIsBooking(false)
-      setBookingTimer(0)
+    }
+    
+    // Start the booking save process
+    try {
+      await attemptBookingSave()
+    } catch (finalError) {
+      console.error('All booking save attempts failed:', finalError)
     }
   }
         const cancelBooking = () => {

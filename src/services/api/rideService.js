@@ -376,8 +376,14 @@ async createSharedRide(rideData) {
     }
   }
 
-  async create(data) {
+async create(data) {
     const now = new Date();
+    
+    // Comprehensive validation before save attempt
+    const validationErrors = this.validateBookingData(data);
+    if (validationErrors.length > 0) {
+      throw new Error(`Booking validation failed: ${validationErrors.join(', ')}`);
+    }
     
     try {
       const enhancedData = {
@@ -388,20 +394,178 @@ async createSharedRide(rideData) {
         // Ensure scheduledTime is valid if provided
         ...(data.scheduledTime && !this.isValidDate(data.scheduledTime) && {
           scheduledTime: now.toISOString()
-        })
+        }),
+        // Add save attempt metadata
+        saveAttemptCount: 1,
+        lastSaveAttempt: now.toISOString()
       };
       
-      const result = await super.create(enhancedData);
+      // Attempt to save with retry logic
+      const result = await this.attemptSaveWithRetry(enhancedData, 3);
       
-      // Verify the booking was saved successfully
-      if (!result || !result.id) {
-        throw new Error('Failed to save booking data');
+      // Comprehensive verification of saved data
+      const verification = await this.verifySavedBooking(result);
+      if (!verification.isValid) {
+        throw new Error(`Data integrity check failed: ${verification.errors.join(', ')}`);
       }
+      
+      console.log('Booking saved successfully:', {
+        id: result.id,
+        vehicleType: result.vehicleType,
+        rideType: result.rideType,
+        status: result.status,
+        saveTime: result.createdAt
+      });
       
       return result;
     } catch (error) {
       console.error('Failed to create ride:', error);
-      throw new Error('Failed to save booking. Please try again.');
+      // Provide more specific error messages based on error type
+      if (error.message.includes('validation')) {
+        throw new Error(`Invalid booking data: ${error.message}`);
+      } else if (error.message.includes('integrity')) {
+        throw new Error(`Booking save verification failed: ${error.message}`);
+      } else if (error.message.includes('network') || error.message.includes('timeout')) {
+        throw new Error('Network error occurred. Please check your connection and try again.');
+      } else {
+        throw new Error('Failed to save booking. Please verify your information and try again.');
+      }
+    }
+  }
+
+  // Validate booking data before save attempt
+  validateBookingData(data) {
+    const errors = [];
+    
+    // Required field validation
+    if (!data.pickupLocation || !data.pickupLocation.address || !data.pickupLocation.address.trim()) {
+      errors.push('Pickup location is required');
+    }
+    
+    if (!data.dropoffLocation || !data.dropoffLocation.address || !data.dropoffLocation.address.trim()) {
+      errors.push('Dropoff location is required');
+    }
+    
+    if (!data.vehicleType || !data.vehicleType.trim()) {
+      errors.push('Vehicle type is required');
+    }
+    
+    if (!data.fare || data.fare <= 0) {
+      errors.push('Valid fare amount is required');
+    }
+    
+    if (!data.rideType || !['personal', 'shared'].includes(data.rideType)) {
+      errors.push('Valid ride type is required');
+    }
+    
+    // Business logic validation
+    if (data.passengerCount && (data.passengerCount < 1 || data.passengerCount > 6)) {
+      errors.push('Passenger count must be between 1 and 6');
+    }
+    
+    if (data.scheduledDateTime) {
+      const scheduledTime = new Date(data.scheduledDateTime);
+      if (isNaN(scheduledTime.getTime()) || scheduledTime < new Date()) {
+        errors.push('Scheduled time must be in the future');
+      }
+    }
+    
+    return errors;
+  }
+
+  // Attempt save with retry logic
+  async attemptSaveWithRetry(data, maxRetries = 3) {
+    let lastError = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Save attempt ${attempt}/${maxRetries} for booking`);
+        
+        const result = await super.create({
+          ...data,
+          saveAttemptCount: attempt,
+          lastSaveAttempt: new Date().toISOString()
+        });
+        
+        // Verify the result immediately
+        if (!result || !result.id) {
+          throw new Error('Save operation returned invalid result');
+        }
+        
+        console.log(`Save attempt ${attempt} successful`);
+        return result;
+        
+      } catch (error) {
+        lastError = error;
+        console.warn(`Save attempt ${attempt} failed:`, error.message);
+        
+        if (attempt < maxRetries) {
+          // Wait before retry (exponential backoff)
+          const delayMs = Math.pow(2, attempt) * 500;
+          console.log(`Retrying in ${delayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+      }
+    }
+    
+    throw new Error(`Failed to save after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
+  }
+
+  // Verify saved booking data integrity
+  async verifySavedBooking(savedData) {
+    const errors = [];
+    
+    try {
+      // Check if booking can be retrieved
+      const retrievedData = await this.getById(savedData.id);
+      if (!retrievedData) {
+        errors.push('Booking not found after save');
+        return { isValid: false, errors };
+      }
+      
+      // Verify critical fields
+      if (!retrievedData.pickupLocation?.address) {
+        errors.push('Pickup location missing in saved data');
+      }
+      
+      if (!retrievedData.dropoffLocation?.address) {
+        errors.push('Dropoff location missing in saved data');
+      }
+      
+      if (!retrievedData.vehicleType) {
+        errors.push('Vehicle type missing in saved data');
+      }
+      
+      if (!retrievedData.fare || retrievedData.fare <= 0) {
+        errors.push('Valid fare missing in saved data');
+      }
+      
+      if (!retrievedData.status) {
+        errors.push('Booking status missing in saved data');
+      }
+      
+      if (!retrievedData.bookingTime || !this.isValidDate(retrievedData.bookingTime)) {
+        errors.push('Valid booking time missing in saved data');
+      }
+      
+      // Verify data consistency
+      if (savedData.pickupLocation?.address !== retrievedData.pickupLocation?.address) {
+        errors.push('Pickup location data inconsistency detected');
+      }
+      
+      if (savedData.dropoffLocation?.address !== retrievedData.dropoffLocation?.address) {
+        errors.push('Dropoff location data inconsistency detected');
+      }
+      
+      return {
+        isValid: errors.length === 0,
+        errors,
+        retrievedData
+      };
+      
+    } catch (error) {
+      errors.push(`Verification failed: ${error.message}`);
+      return { isValid: false, errors };
     }
   }
 
